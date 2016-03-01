@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Ejercicio1-xml" default="compile" basedir=".">
+	<description>Ejemplo de fichero build.xml</description>
+
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="doc.dir" value="${basedir}/doc" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="src.dir" value="${basedir}/src" />
+
+	<path id="compile.classpath">
+		<pathelement location="${build.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="all" description="Development targets." depends="clean, prepare, compile, package, doc" />
+
+	<target description="Create directories" name="prepare">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${doc.dir}" />
+	</target>
+
+	<target description="Delete the directories with generated products ." name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${doc.dir}" />
+	</target>
+
+
+	<target name="compile" depends="prepare" description="Compile the full source files.">
+		<javac encoding="UTF-8" srcdir="${src.dir}" destdir="${build.dir}" source="1.7" target="1.7" includeantruntime="false">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+
+
+	<target name="package" depends="compile" description="Generate the application (jar file).">
+		<jar destfile="${dist.dir}/aplicacion-1.0.jar" basedir="${build.dir}" includes="nombre_paquete_raiz/**">
+			<manifest>
+				<attribute name="Main-Class" value="nombre_de_la_clase_con_main" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="javadoc" depends="prepare,compile" description="JavaDoc API">
+		<javadoc encoding="WINDOWS-1252" charset="UTF-8" docencoding="UTF-8" destdir="${doc.dir}" packagenames="nombre_paquete_raiz.*" 				source="1.6" access="private">
+			<link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${resources.dir}" />
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<fileset dir="${lib.dir}">
+					<include name="*.jar" />
+				</fileset>
+				<pathelement path="." />
+			</classpath>
+			
+			<fileset dir="${src.dir}" casesensitive="yes">
+				<include name="**/*.java" />
+			</fileset>
+		</javadoc>
+	</target>
+</project>
