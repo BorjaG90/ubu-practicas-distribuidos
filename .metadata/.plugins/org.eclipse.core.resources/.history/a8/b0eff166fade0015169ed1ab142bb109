@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="Ejercicio1-xml" default="compile" basedir=".">
-	<description>Ejemplo de fichero build.xml</description>
-	
-</project>

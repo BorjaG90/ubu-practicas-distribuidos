@@ -1,3 +1,0 @@
-INDEX VERSION 1.127+D:\Dropbox\UBU\2o Semestre\Sistemas Distribuidos\Práctica\eclipse\.metadata\.plugins\org.eclipse.jdt.core
-2356011476.index
-3304894172.index
