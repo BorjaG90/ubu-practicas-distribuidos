@@ -1,19 +1,18 @@
 package es.ubu.lsi.server;
-
+/**Clase ChatServerImpl
+ * Implementacion del servidor del chat
+ * @author Borja Gete & Plamen Petkov
+ * @version 1.0.0
+ */
 import java.text.SimpleDateFormat;
-
 import es.ubu.lsi.common.ChatMessage;
 
 public class ChatServerImpl implements ChatServer{
 	
 	private final int DEFAULT_PORT = 1500;
-	
 	private int clientId;
-	
 	private SimpleDateFormat sdf;
-	
 	private int port;
-	
 	private boolean alive;
 	
 	public ChatServerImpl(int port) {
@@ -43,7 +42,19 @@ public class ChatServerImpl implements ChatServer{
 		// TODO Auto-generated method stub
 		
 	}
-	
+	class ChatServerThreadForClient extends Thread {
+
+		private int id;
+		private String username;
+		
+		public ChatServerThreadForClient(int id, String username) {
+			super(username);
+			this.id = id;
+		}
+		public void run() {
+			
+		}
+	}
 	public static void main(String[] args){
 		
 	}
