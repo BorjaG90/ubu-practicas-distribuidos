@@ -8,11 +8,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import java.text.SimpleDateFormat;
-
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import es.ubu.lsi.common.ChatMessage;
+import es.ubu.lsi.common.MessageType;
 
 /**
  * Clase ChatServerImpl Implementacion del servidor del chat
@@ -25,56 +26,46 @@ public class ChatServerImpl implements ChatServer {
 	private static final int DEFAULT_PORT = 1500;
 	private static int clientId;
 	private static SimpleDateFormat sdf;
+
 	private int port;
 	private boolean alive;
 
-	ServerSocket serverSocket;
-	Map<Integer, ChatServerThreadForClient> clients;
+	Map<String, ServerThreadForClient> clients;
 
 	public ChatServerImpl() throws IOException {
 		this(DEFAULT_PORT);
 	}
 
 	public ChatServerImpl(int port) throws IOException {
-		alive = true;
 		this.port = port;
-		serverSocket = new ServerSocket(port);
-		clients = new HashMap<Integer, ChatServerThreadForClient>();
+		alive = true;
+		clientId = 0;
+		sdf = new SimpleDateFormat("HH:mm:ss");
+		clients = new HashMap<String, ServerThreadForClient>();
+	}
+
+	public static void main(String[] args) throws IOException {
+
+		ChatServerImpl server = new ChatServerImpl();
+		server.startup();
 	}
 
 	@Override
 	public void startup() {
-
-		int id;
-		String username;
-		ChatMessage request;
-		Socket clientSocket;
-		ChatServerThreadForClient clientThread;
-
-		try {
+		try (ServerSocket server = new ServerSocket(port);) {
 			while (alive) {
-
-				clientSocket = serverSocket.accept();
-
-				request = (ChatMessage) new ObjectInputStream(clientSocket.getInputStream()).readObject();
-
-				id = request.getId();
-				username = request.getMessage();
-
-				if (clients.get(id) == null) {
-					clientThread = new ChatServerThreadForClient(id, username, clientSocket);
-					clients.put(id, clientThread);
-					clientThread.start();
+				System.out.println("Listening for connections at " +
+						server.getInetAddress() + ":" +
+						server.getLocalPort());
+				try {
+					manageRequest(server.accept(), new Date());
+				} catch (ClassNotFoundException | IOException e) {
+					
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+			System.err.println("Fatal error: could not launch the server! Exiting now ...");
+		}		
 	}
 
 	@Override
@@ -99,8 +90,42 @@ public class ChatServerImpl implements ChatServer {
 	public void remove(int id) {
 		clients.remove(id);
 	}
+	
+	private void manageRequest(Socket client, Date timestamp) throws IOException,
+			ClassNotFoundException {
+		
+		ChatMessage request;
+		ChatMessage response;
+		ServerThreadForClient clientThread;
+		
+		String username;
+		String msg;
+		String loginTime = sdf.format(timestamp);	
+		
+		request = (ChatMessage) new ObjectInputStream(client.getInputStream()).readObject();
+		username = request.getMessage();
+			
+		if (clients.get(username) != null) {
+			msg = "Could not connect: username " + username + " already exists!";
+			response = new ChatMessage(0, MessageType.SHUTDOWN, msg);
+		} else {
+			clientThread = new ServerThreadForClient(username, client);
+			clientThread.start();
+			clients.put(username, clientThread);
+			clientId++;
+			
+			System.out.println("[" + loginTime + "]: " + username +
+					" has just connected");
+			
+			msg = "[" + loginTime+ "] SERVER: Welcome to Chat 1.0! " + 
+					"You are connected as " + username;
+			
+			response = new ChatMessage(0, MessageType.MESSAGE, msg);
+		}
+		new ObjectOutputStream(client.getOutputStream()).writeObject(response);
+	}
 
-	class ChatServerThreadForClient extends Thread {
+	class ServerThreadForClient extends Thread {
 
 		private int id;
 		private String username;
@@ -109,24 +134,33 @@ public class ChatServerImpl implements ChatServer {
 		private ObjectInputStream in;
 		private ObjectOutputStream out;
 
-		public ChatServerThreadForClient(int id, String username, Socket socket) throws IOException {
+		public ServerThreadForClient(String username, Socket socket) {
 			super(username);
-			this.id = id;
 			this.socket = socket;
-			in = new ObjectInputStream(socket.getInputStream());
-			out = new ObjectOutputStream(socket.getOutputStream());
+			try {
+				in = new ObjectInputStream(socket.getInputStream());
+				out = new ObjectOutputStream(socket.getOutputStream());
+			} catch (IOException e) {
+				close();
+			}
+
+			ChatMessage msg = (ChatMessage) in.readObject();
 		}
 
 		@Override
 		public void run() {
 
 		}
-	}
-
-	public static void main(String[] args) throws IOException {
-
-		ChatServerImpl server = new ChatServerImpl();
-		server.startup();
+		
+		public void close() {
+			try {
+				in.close();
+				out.close();
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
