@@ -1,3 +1,9 @@
 .class
 
-RemoteSystenTempFiles/
+
+
+.metadata/
+
+RemoteSystemsTempFiles/
+.recommenders
+Chat1.0/target/
