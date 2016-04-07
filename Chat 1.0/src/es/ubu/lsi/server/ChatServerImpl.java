@@ -12,8 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.ubu.lsi.common.ChatMessage;
-import es.ubu.lsi.common.MessageType;
+import es.ubu.lsi.common.*;
 
 /**
  * Clase ChatServerImpl Implementacion del servidor del chat
@@ -49,7 +48,7 @@ public class ChatServerImpl implements ChatServer {
 		ChatServerImpl server = new ChatServerImpl();
 		server.startup();
 	}
-
+	
 	@Override
 	public void startup() {
 		try (ServerSocket server = new ServerSocket(port);) {
@@ -57,6 +56,7 @@ public class ChatServerImpl implements ChatServer {
 				System.out.println("Listening for connections at " +
 						server.getInetAddress() + ":" +
 						server.getLocalPort());
+				System.out.println("Connected clients so far: " + clientId);
 				try {
 					manageRequest(server.accept(), new Date());
 				} catch (ClassNotFoundException | IOException e) {
@@ -77,13 +77,7 @@ public class ChatServerImpl implements ChatServer {
 	@Override
 	// es probable que tenga que ser un metodo synchronized
 	public void broadcast(ChatMessage message) {
-		for (int id : clients.keySet())
-			if (id != clientId)
-				try {
-					clients.get(id).out.writeObject(message);
-				} catch (IOException e) {
-					System.err.println("Could not send message to user " + clients.get(id).username);
-				}
+
 	}
 
 	@Override
@@ -91,8 +85,8 @@ public class ChatServerImpl implements ChatServer {
 		clients.remove(id);
 	}
 	
-	private void manageRequest(Socket client, Date timestamp) throws IOException,
-			ClassNotFoundException {
+	private void manageRequest(Socket client, Date timestamp) throws
+		ClassNotFoundException, IOException {
 		
 		ChatMessage request;
 		ChatMessage response;
@@ -109,10 +103,15 @@ public class ChatServerImpl implements ChatServer {
 			msg = "Could not connect: username " + username + " already exists!";
 			response = new ChatMessage(0, MessageType.SHUTDOWN, msg);
 		} else {
-			clientThread = new ServerThreadForClient(username, client);
-			clientThread.start();
-			clients.put(username, clientThread);
-			clientId++;
+				try {
+					clientThread = new ServerThreadForClient(username, client);
+					clientThread.start();
+					clients.put(username, clientThread);
+					clientId++;
+				} catch (ClassNotFoundException | IOException e) {
+					System.err.println("Unable to create handler thread for " +
+							"user " + username + "!");
+				}
 			
 			System.out.println("[" + loginTime + "]: " + username +
 					" has just connected");
@@ -134,17 +133,17 @@ public class ChatServerImpl implements ChatServer {
 		private ObjectInputStream in;
 		private ObjectOutputStream out;
 
-		public ServerThreadForClient(String username, Socket socket) {
+		public ServerThreadForClient(String username, Socket socket) throws
+				IOException, ClassNotFoundException {
 			super(username);
 			this.socket = socket;
-			try {
-				in = new ObjectInputStream(socket.getInputStream());
-				out = new ObjectOutputStream(socket.getOutputStream());
-			} catch (IOException e) {
-				close();
-			}
-
+			
+			in = new ObjectInputStream(socket.getInputStream());
+			out = new ObjectOutputStream(socket.getOutputStream());
 			ChatMessage msg = (ChatMessage) in.readObject();
+				
+			this.id = msg.getId();
+			this.username = username;
 		}
 
 		@Override
@@ -162,5 +161,4 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 	}
-
 }
