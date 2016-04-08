@@ -12,5 +12,5 @@ public interface ChatServer {
 	public void startup();
 	public void shutdown();
 	public void broadcast(ChatMessage message);
-	public void remove(int id);
+	public void remove(String username);
 }
