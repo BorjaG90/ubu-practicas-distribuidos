@@ -30,17 +30,23 @@ public class ChatServerImpl implements ChatServer {
 	private boolean alive;
 
 	Map<String, ServerThreadForClient> clients;
+	ServerSocket server;
 
 	public ChatServerImpl() throws IOException {
 		this(DEFAULT_PORT);
 	}
 
-	public ChatServerImpl(int port) throws IOException {
+	public ChatServerImpl(int port) {
 		this.port = port;
-		alive = true;
-		clientId = 0;
-		sdf = new SimpleDateFormat("HH:mm:ss");
-		clients = new HashMap<String, ServerThreadForClient>();
+		this.alive = true;
+		this.clientId = 0;
+		this.sdf = new SimpleDateFormat("HH:mm:ss");
+		this.clients = new HashMap<String, ServerThreadForClient>();
+		try {
+			this.server = new ServerSocket(port);
+		} catch (IOException e) {
+			System.err.println("Fatal error: could not launch server! Exiting now ...");
+		}
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -51,32 +57,33 @@ public class ChatServerImpl implements ChatServer {
 	
 	@Override
 	public void startup() {
+		Socket client;
 		System.out.println("[" + sdf.format(new Date()) + "] Server started!");
-		try (ServerSocket server = new ServerSocket(port);) {
-			while (alive) {
-				System.out.println("Listening for connections at " +
-						server.getInetAddress() + ":" +
-						server.getLocalPort());
-				System.out.println("Connected clients so far: " + clientId);
-				try {
-					manageRequest(server.accept(), new Date());
-				} catch (ClassNotFoundException | IOException e) {
-					System.err.println("Unable to manage request!");
-				}
+		while (alive) {
+			System.out.println("Listening for connections at " +
+					server.getInetAddress() + ":" +
+					server.getLocalPort());
+			System.out.println("Connected clients so far: " + clientId);
+			try {
+				client = server.accept();
+				manageRequest(client, new Date());
+			} catch (IOException e) {
+				System.err.println("Error: could not accept new connection !");
+				close();
 			}
-		} catch (IOException e) {
-			System.err.println("Fatal error: could not launch the server! Exiting now ...");
-		}		
+		}
+		close();
 	}
 
 	@Override
 	public void shutdown() {
-		System.out.println("Shutting down server ...");
+		//No implementado
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void broadcast(ChatMessage message) {
-		String time = "[" + sdf.format(new Date()) + "]";
+		String time = "[" + sdf.format(new Date()) + "]";		
 		for(ServerThreadForClient handler : clients.values()) {
 			message.setMessage(time + handler.username + ": " + message.getMessage());
 			try {
@@ -91,14 +98,18 @@ public class ChatServerImpl implements ChatServer {
 
 	@Override
 	public void remove(String username) {
-		clients.remove(username);
+		ChatMessage msg = new ChatMessage(0, MessageType.LOGOUT, "You are now disconnected from server!");
+		ServerThreadForClient client = clients.remove(username);
 		clientId--;
+		try {
+			client.out.writeObject(msg);
+		} catch (IOException e) {
+			System.err.println("Error: could notify logout to user " + client.username);
+		}
 	}
 	
-	private void manageRequest(Socket socket, Date timestamp) throws
-		ClassNotFoundException, IOException {
-		
-		int id;
+	private void manageRequest(Socket socket, Date timestamp) {
+		int key;
 		String username;
 		String msg;
 		String loginTime = sdf.format(timestamp);
@@ -106,32 +117,41 @@ public class ChatServerImpl implements ChatServer {
 		ChatMessage response;
 		ServerThreadForClient clientThread;
 		
-		request = (ChatMessage) new ObjectInputStream(socket.getInputStream()).readObject();
-		id = request.getId();
-		username = request.getMessage();
+		try {
+			request = (ChatMessage) new ObjectInputStream(socket.getInputStream()).readObject();
+			key = request.getId();
+			username = request.getMessage();
 			
-		if (clients.get(username) != null) {
-			msg = "Could not connect: username " + username + " already exists!";
-			response = new ChatMessage(0, MessageType.SHUTDOWN, msg);
-		} else {
-			try {
-				clientThread = new ServerThreadForClient(id, username, socket);
+			if (clients.get(username) != null) {
+				msg = "Could not connect: username " + username + " already exists!";
+				response = new ChatMessage(0, MessageType.LOGOUT, msg);
+			} else {
+				clientThread = new ServerThreadForClient(key, username, socket);
 				clientThread.start();
 				clients.put(username, clientThread);
 				clientId++;
-			} catch (IOException e) {
-				System.err.println("Unable to create connection handler thread for " +
-					"user " + username + "!");
+		
+				System.out.println("[" + loginTime + "]: " + username +
+						" has just connected to the server!");
+				msg = "[" + loginTime + "]SERVER: Welcome to Chat 1.0! " + 
+						"You are logged in as " + username;
+				response = new ChatMessage(0, MessageType.MESSAGE, msg);
 			}
-			System.out.println("[" + loginTime + "]: " + username +
-					" has just connected to the server!");
-			msg = "[" + loginTime + "]SERVER: Welcome to Chat 1.0! " + 
-					"You are logged in as " + username;
-			response = new ChatMessage(0, MessageType.MESSAGE, msg);
+			
+			new ObjectOutputStream(socket.getOutputStream()).writeObject(response);
+		} catch (IOException | ClassNotFoundException e) {
+			System.err.println("Error: could not manage connection request!");
 		}
-		new ObjectOutputStream(socket.getOutputStream()).writeObject(response);
 	}
-
+	
+	private void close() {
+		try {
+			server.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	class ServerThreadForClient extends Thread {
 
 		private int id;
@@ -140,47 +160,55 @@ public class ChatServerImpl implements ChatServer {
 
 		private ObjectInputStream in;
 		private ObjectOutputStream out;
+		
+		private boolean logout;
 
-		public ServerThreadForClient(int id, String username, Socket socket) throws
-				IOException{
+		public ServerThreadForClient(int id, String username, Socket socket) {
 			super(username);
 			this.id = id;
 			this.username = username;
 			this.socket = socket;
-			
-			in = new ObjectInputStream(socket.getInputStream());
-			out = new ObjectOutputStream(socket.getOutputStream());			
+			logout = false;
+			try {
+				in = new ObjectInputStream(socket.getInputStream());
+				out = new ObjectOutputStream(socket.getOutputStream());
+			} catch (IOException e) {
+				System.err.println("Error: could not create connection handler " + 
+						"thread for user " + username + "!");
+				close();
+			}
 		}
 
 		@Override
 		public void run() {
-			
-			ChatMessage msg;
-			boolean logout = false;
-			
 			while(!logout) {
 				try {
-					msg = (ChatMessage) in.readObject();
-					switch(msg.getType()) {
-						case MESSAGE:
-							msg.setMessage(decryptText(msg.getMessage(), id));
-							broadcast(msg);
-							break;
-						case LOGOUT:
-							logout = true;
-							remove(username);
-							System.out.println("[" + sdf.format(new Date()) + 
-									"] Disconnected user " + username);
-							break;							
-						default:
-					}
+					listen();
 				} catch (ClassNotFoundException | IOException e) {
-					System.err.println("Unable to receive messages from user " + username + 
-							"! Shutting down connection handler for this user.");
+					System.err.println("Error: could not receive message from user " +
+							username + "! Shutting down connection handler for this user.");
+					remove(username);
 					close();
 				}		
 			}
 			close();
+		}
+		
+		private void listen() throws ClassNotFoundException, IOException {
+			ChatMessage msg = (ChatMessage) in.readObject();			
+			switch(msg.getType()) {
+				case MESSAGE:
+					msg.setMessage(decryptText(msg.getMessage(), id));
+					broadcast(msg);
+					break;
+				case LOGOUT:
+					logout = true;
+					remove(username);
+					System.out.println("[" + sdf.format(new Date()) + 
+							"] Disconnected user " + username);
+					break;							
+				default:
+			}
 		}
 		
 		private String decryptText(String text, int key) {
@@ -192,9 +220,12 @@ public class ChatServerImpl implements ChatServer {
 		
 		private void close() {
 			try {
-				in.close();
-				out.close();
-				socket.close();
+				if(in != null)
+					in.close();
+				if(out != null)
+					out.close();
+				if(socket != null)
+					socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
