@@ -1,4 +1,5 @@
 package es.ubu.lsi.client;
+
 /**Interfaz ChatClient
  * Define la signatura de los métodos de envío de mensaje, 
  * desconexión y arranque

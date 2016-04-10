@@ -1,4 +1,5 @@
 package es.ubu.lsi.server;
+
 /**Interfaz ChatServer
  * Define la signatura de los métodos de arranque, multidifusión, 
  * eliminación de cliente y apagado.

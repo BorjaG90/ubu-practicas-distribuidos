@@ -16,14 +16,15 @@ import es.ubu.lsi.common.*;
  */
 
 public class ChatClientImpl implements ChatClient {
-	
+
 	private String server;
 	private String username;
 	private int key;
 	private int port;
-	private boolean carryOn = true;
+	private boolean carryOn;
 	private Socket clientSocket;
-	private ObjectOutputStream out;
+	ObjectOutputStream out;
+
 	private Scanner input;
 
 	/**
@@ -38,12 +39,14 @@ public class ChatClientImpl implements ChatClient {
 		this.port = port;
 		this.username = username;
 		this.key = key;
-		
+		this.carryOn = true;
+
 		try {
 			this.clientSocket = new Socket(this.server, this.port);
-			this.out = new ObjectOutputStream(clientSocket.getOutputStream());
+			out = new ObjectOutputStream(clientSocket.getOutputStream());
 		} catch (IOException e) {
-			System.err.println("Fatal error: could not launch client! Exiting now ...");
+			System.err.println("FATAL ERROR: could not launch client! Exiting now ...");
+			System.exit(1);
 		}
 	}
 
@@ -51,15 +54,16 @@ public class ChatClientImpl implements ChatClient {
 	 * main method
 	 * 
 	 * @param args
+	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
-	public static void main(String[] args) {
-		
-		int key = -1;
+	public static void main(String[] args) throws ClassNotFoundException, IOException {
+
+		int key = 3;
 		int port = 1500;
 		String username = null;
 		String server = "localhost";
-		ChatClientImpl client;
-		
+
 		if (args.length == 2) {
 			username = args[0];
 			key = Integer.parseInt(args[1]);
@@ -73,55 +77,28 @@ public class ChatClientImpl implements ChatClient {
 			System.exit(1);
 		}
 
-		client = new ChatClientImpl(server, port, username, key);
-		client.start();
+		new ChatClientImpl(server, port, username, key).start();
 	}
 
 	@Override
 	public boolean start() {
-		
-		ChatMessage msg;
-		Thread listener;
+
 		String text;
+		ChatMessage msg;
 		
-		// Crear objeto mensaje de conexion
-		msg = new ChatMessage(key, MessageType.MESSAGE, username);
-		sendMessage(msg);
-		try {
-			msg = (ChatMessage) new ObjectInputStream(clientSocket.getInputStream()).readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			System.err.println("Error: could not get response from server!");
-		}
-			
-		System.out.println(msg.getMessage());
-		if (msg.getType() == MessageType.LOGOUT) {
-			System.out.println("Shutting down client now...");
-			disconnect();
-			System.exit(0);
-		}
-			
-		try {
-			listener = new Thread(
-					new ChatClientListener(
-					new ObjectInputStream(clientSocket.getInputStream())));
-			listener.start();
-		} catch (IOException e) {
-			System.err.println("Error: could not create listener thread!");
-			disconnect();
-		}
-					
+		connect();
+		
 		input = new Scanner(System.in);
 		while (carryOn) {
-			System.out.print("-->");
+			System.out.print(">>>");
 			if ((text = input.next()).equalsIgnoreCase("logout")) {
 				msg = new ChatMessage(key, MessageType.LOGOUT, text);
-				carryOn = false;
+				disconnect();
 			} else {
 				msg = new ChatMessage(key, MessageType.MESSAGE, encryptText(text, key));
 			}
 			sendMessage(msg);
 		}
-		disconnect();
 		return true;
 	}
 
@@ -130,7 +107,7 @@ public class ChatClientImpl implements ChatClient {
 		try {
 			out.writeObject(msg);
 		} catch (IOException e) {
-			System.err.println("Error: could not send message!");
+			System.err.println("ERROR: could not send message to server!");
 		}
 	}
 
@@ -138,56 +115,59 @@ public class ChatClientImpl implements ChatClient {
 	public void disconnect() {
 		carryOn = false;
 		try {
-			if(input != null)
+			if (input != null)
 				input.close();
-			if(out != null)
+			if (out != null)
 				out.close();
-			if(clientSocket != null)
+			if (clientSocket != null)
 				clientSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	private void connect() {
+		ChatMessage msg = new ChatMessage(key, MessageType.MESSAGE, username);
+		ObjectInputStream in;
+		
+		try {
+			in = new ObjectInputStream(clientSocket.getInputStream());
+			sendMessage(msg);		
+			msg = (ChatMessage) in.readObject();
+			
+			System.out.println(msg.getMessage());
+			if (msg.getType() == MessageType.LOGOUT) {
+				System.out.println("Shutting down client now...");
+				disconnect();
+				System.exit(0);
+			}
+			new Thread(new ChatClientListener(in)).start();
+		} catch (IOException | ClassNotFoundException e) {
+			System.err.println("ERROR: could not get response from server!");
+			disconnect();
+			System.exit(1);
+		}
+	}
 
-	/**
-	 * Método encryptText Encripta un mensaje mediante cifrado Cesar
-	 * 
-	 * @param text
-	 *            Mensaje a encriptar
-	 * @param key
-	 *            Clave usada para encriptar
-	 * @return Devuelve el mensaje encriptado
-	 */
 	private String encryptText(String text, int key) {
 		String prefix = "encrypted#";
 		if (text.startsWith(prefix))
 			text = prefix + CaesarCipher.encrypt(text.substring(prefix.length()), key);
 		return text;
 	}
-	
+
 	private static void printHelp() {
-		System.out.println("USAGE: java ChatClientImpl <server_address> <username> <key>");
-		System.out.println("Note: uses localhost by default if server address is omitted");
+		System.out.println("USAGE:");
+		System.out.println("\tjava ChatClientImpl <server_address> <username> <key>");
+		System.out.println("\tOR");
+		System.out.println("\tjava ChatClientImpl <username> <key> (default server: localhost)");
 	}
 
-	/**
-	 * Clase ChatClientListener Implementa la interfaz Runnable, por lo tanto,
-	 * redefine el método run para ejecutar el hilo de escucha de mensajes del
-	 * servidor (flujo de entrada) y mostrar los mensajes entrantes.
-	 * 
-	 * @author Borja Gete & Plamen Petkov
-	 *
-	 */
 	class ChatClientListener implements Runnable {
-		
+
 		ObjectInputStream in;
 
-		/**
-		 * Constructor
-		 * 
-		 * @param clientSocket
-		 */
-		ChatClientListener(ObjectInputStream in) {
+		public ChatClientListener(ObjectInputStream in) {
 			this.in = in;
 		}
 
@@ -197,11 +177,12 @@ public class ChatClientImpl implements ChatClient {
 				try {
 					String mensaje = ((ChatMessage) in.readObject()).getMessage();
 					System.out.println(mensaje);
-					System.out.print("-->");
 				} catch (IOException | ClassNotFoundException e) {
-
+					System.err.println("ERROR: could not receive message! Server is unavailable.");
+					System.out.println("Shutting down client now ...");
+					disconnect();
 				}
 			}
 		}
-	}// -ChatClientListener
-}// -ChatClientImpl
+	}
+}
