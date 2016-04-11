@@ -9,9 +9,22 @@ package es.ubu.lsi.server;
 import es.ubu.lsi.common.ChatMessage;
 
 public interface ChatServer {
-	
+	/**
+	 * startup method
+	 */
 	public void startup();
+	/**
+	 * shutdown method
+	 */
 	public void shutdown();
+	/**
+	 * broadcast method
+	 * @param message
+	 */
 	public void broadcast(ChatMessage message);
+	/**
+	 * remove method
+	 * @param username
+	 */
 	public void remove(String username);
 }

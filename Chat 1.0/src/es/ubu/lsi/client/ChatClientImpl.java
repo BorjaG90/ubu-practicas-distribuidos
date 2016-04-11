@@ -21,6 +21,7 @@ public class ChatClientImpl implements ChatClient {
 	private String username;
 	private int key;
 	private int port;
+	//Booleano que indica el permiso a leer del canal
 	private boolean carryOn;
 	private Socket clientSocket;
 	ObjectOutputStream out;
@@ -55,7 +56,7 @@ public class ChatClientImpl implements ChatClient {
 	/**
 	 * main method
 	 * 
-	 * @param args
+	 * @param args Pueden ser la clave, usuario y servidor
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
@@ -81,7 +82,11 @@ public class ChatClientImpl implements ChatClient {
 
 		new ChatClientImpl(server, port, username, key).start();
 	}
-
+	/**
+	 * start method
+	 * Implementacion del metodo start
+	 * Conecta al cliente con el servidor y gestiona el envio de mensajes
+	 */
 	@Override
 	public boolean start() {
 
@@ -105,7 +110,11 @@ public class ChatClientImpl implements ChatClient {
 		}
 		return true;
 	}
-
+	/**
+	 * sendMessage implementation
+	 * Implementacion del metodo sendMessage
+	 * Metodo que envia un mensaje por el canal al servidor
+	 */
 	@Override
 	public void sendMessage(ChatMessage msg) {
 		try {
@@ -115,7 +124,11 @@ public class ChatClientImpl implements ChatClient {
 			System.err.println("ERROR: could not send message to server!");
 		}
 	}
-
+	/**
+	 * disconnect implementation
+	 * Implementacion del metodo disconnect
+	 * Metodo que evita la lectura del canal de entrada y cierra conexiones al servidor
+	 */
 	@Override
 	public void disconnect() {
 		carryOn = false; //Dejamos de leer del canal
@@ -200,10 +213,14 @@ public class ChatClientImpl implements ChatClient {
 		public ChatClientListener(ObjectInputStream in) {
 			this.in = in;
 		}
-
+		/**
+		 * run implementation
+		 * Implementacion del metodo run
+		 * Escucha en el canal de entrada los mensajes que provienen del servidor
+		 */
 		@Override
 		public void run() {
-			while (carryOn) {
+			while (carryOn) {//Mientras pueda leer del canal de entrada
 				try {
 					String mensaje = ((ChatMessage) in.readObject()).getMessage();
 					System.out.println(mensaje);

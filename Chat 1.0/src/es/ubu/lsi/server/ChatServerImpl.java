@@ -65,17 +65,21 @@ public class ChatServerImpl implements ChatServer {
 
 		new ChatServerImpl().startup();
 	}
-	
+	/**
+	 * startup implementation
+	 * Implementación del metodo startup
+	 */
 	@Override
 	public void startup() {
 		Socket client;
-		
+		//Inicia el servidor y comienza a escuchar peticiones
 		System.out.println("[" + sdf.format(new Date()) + "] Server started!");
 		while (alive) {
 			System.out.println("Listening for connections at " + server.getInetAddress() + ":" + server.getLocalPort());
 			System.out.println("Connected clients so far: " + clientId);
 			
 			try {
+				//Al aceptar conexiones inicia el hilo de servidor para ese cliente
 				client = server.accept();
 				new ServerThreadForClient(client).start();
 			} catch (IOException e) {
@@ -83,13 +87,21 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 	}
-
+	/**
+	 * shutdown implementation
+	 * Implementacion del metodo shutdown
+	 * No se implementa porque no se pide
+	 */
 	@Override
 	public void shutdown() {
 		// No implementado
 		throw new UnsupportedOperationException();
 	}
-	
+	/**
+	 * broadcast implementation
+	 * Implementacion del metodo broadcast
+	 * Recibe un mensaje de un cliente y lo reenvia al resto de clientes conectados
+	 */
 	@Override
 	public void broadcast(ChatMessage message) {
 		String time = "[" + sdf.format(new Date()) + "]";
@@ -104,7 +116,11 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 	}
-	
+	/**
+	 *remove implementation
+	 *Implementacion del metodo remove
+	 *Desconecta y elimina del diccionario al cliente especificado
+	 */
 	@Override
 	public void remove(String username) {
 		//Enviamos un mensaje de desconexion y eliminamos al cliente del diccionario
@@ -155,7 +171,11 @@ public class ChatServerImpl implements ChatServer {
 			this.setName(username);
 			System.out.println("Created connection handler for user " + username + "!");
 		}
-		
+		/**
+		 * run implementation
+		 * Implementacion del metodo run
+		 * Realiza las acciones para conectar y comunicar con un cliente 
+		 */
 		@Override
 		public void run() {
 			try {

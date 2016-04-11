@@ -9,8 +9,18 @@ package es.ubu.lsi.client;
 import es.ubu.lsi.common.ChatMessage;
 
 public interface ChatClient {
-	
+	/**
+	 * start method
+	 * @return 
+	 */
 	public boolean start();
+	/**
+	 * sendMessage method
+	 * @param msg
+	 */
 	public void sendMessage(ChatMessage msg);
+	/**
+	 * disconnect method
+	 */
 	public void disconnect();
 }
