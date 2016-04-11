@@ -39,9 +39,11 @@ public class ChatClientImpl implements ChatClient {
 		this.port = port;
 		this.username = username;
 		this.key = key;
+		// Booleano para que siga leyendo
 		this.carryOn = true;
 
 		try {
+			//Instanciamos el socket y el canal de salida
 			this.clientSocket = new Socket(this.server, this.port);
 			out = new ObjectOutputStream(clientSocket.getOutputStream());
 		} catch (IOException e) {
@@ -92,9 +94,11 @@ public class ChatClientImpl implements ChatClient {
 		while (carryOn) {
 			System.out.print(">>>");
 			if ((text = input.next()).equalsIgnoreCase("logout")) {
+				// Si el cliente pide desconectarse
 				msg = new ChatMessage(key, MessageType.LOGOUT, text);
 				disconnect();
 			} else {
+				// Si el cliente escribe un mensaje
 				msg = new ChatMessage(key, MessageType.MESSAGE, encryptText(text, key));
 			}
 			sendMessage(msg);
@@ -105,6 +109,7 @@ public class ChatClientImpl implements ChatClient {
 	@Override
 	public void sendMessage(ChatMessage msg) {
 		try {
+			//Envia el mensaje por el canal de salida
 			out.writeObject(msg);
 		} catch (IOException e) {
 			System.err.println("ERROR: could not send message to server!");
@@ -113,7 +118,7 @@ public class ChatClientImpl implements ChatClient {
 
 	@Override
 	public void disconnect() {
-		carryOn = false;
+		carryOn = false; //Dejamos de leer del canal
 		try {
 			if (input != null)
 				input.close();
@@ -125,7 +130,14 @@ public class ChatClientImpl implements ChatClient {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * connect method
+	 * Método que conecta un cliente al servidor.
+	 * La conexion se realiza enviando un mensaje con solicitud de login
+	 * y espera a recibir la respuesta del servidor
+	 * Si el servidor envia un mensaje de tipo logout 
+	 * significa que ya hay un usuario con ese nick
+	 */
 	private void connect() {
 		ChatMessage msg = new ChatMessage(key, MessageType.MESSAGE, username);
 		ObjectInputStream in;
@@ -148,25 +160,43 @@ public class ChatClientImpl implements ChatClient {
 			System.exit(1);
 		}
 	}
-
+	/**
+	 * encryptText method
+	 * Método que encripta texto mediante cifrado Cesar
+	 * si se le especifica al inicio del texto
+	 * @param text Texto a cifrar
+	 * @param key Clave usada para cifrar
+	 * @return Devuelve el texto recibido cifrado o sin cifrar
+	 */
 	private String encryptText(String text, int key) {
 		String prefix = "encrypted#";
-		if (text.startsWith(prefix))
+		if (text.startsWith(prefix)) //Si comienza con el prefijo indicado se cifra
 			text = prefix + CaesarCipher.encrypt(text.substring(prefix.length()), key);
 		return text;
 	}
-
+	/**
+	 * printHelp method
+	 * Método que muestra ayuda para el uso del modulo ChatClientImpl
+	 */
 	private static void printHelp() {
 		System.out.println("USAGE:");
 		System.out.println("\tjava ChatClientImpl <server_address> <username> <key>");
 		System.out.println("\tOR");
 		System.out.println("\tjava ChatClientImpl <username> <key> (default server: localhost)");
 	}
-
+	/**
+	 * Clase interna ChatClientListener
+	 * Crea un hilo de escucha que recibe lo que emite el servidor
+	 * @author Borja Gete & Plamen Petyov
+	 *
+	 */
 	class ChatClientListener implements Runnable {
 
 		ObjectInputStream in;
-
+		/**
+		 * Constructor
+		 * @param in Canal de entrada
+		 */
 		public ChatClientListener(ObjectInputStream in) {
 			this.in = in;
 		}

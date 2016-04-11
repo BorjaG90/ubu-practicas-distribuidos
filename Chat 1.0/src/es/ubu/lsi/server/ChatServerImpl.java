@@ -13,7 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import es.ubu.lsi.common.*;
-
+/**
+ * Clase ChatServerImpl Implementación del servidor de Chat
+ * @author Borja Gete & Plamen Petkov
+ * @version 1.0.0
+ */
 public class ChatServerImpl implements ChatServer {
 
 	private static final int DEFAULT_PORT = 1500;
@@ -22,14 +26,22 @@ public class ChatServerImpl implements ChatServer {
 
 	private int port;
 	private boolean alive;
-
+	//Diccionario con los nicknames y su hilo asociado
 	Map<String, ServerThreadForClient> clients;
 	ServerSocket server;
-
+	/**
+	 * Constructor vacío
+	 * 
+	 * @throws IOException
+	 */
 	public ChatServerImpl() throws IOException {
 		this(DEFAULT_PORT);
 	}
-
+	/**
+	 * Constructor
+	 * 
+	 * @param port Puerto de conexión
+	 */
 	public ChatServerImpl(int port) {
 		clientId = 0;
 		sdf = new SimpleDateFormat("HH:mm:ss");
@@ -42,13 +54,18 @@ public class ChatServerImpl implements ChatServer {
 			System.exit(1);
 		}
 	}
-
+	/**
+	 * main method
+	 * 
+	 * @param args
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 
 		new ChatServerImpl().startup();
 	}
 	
-	// OK
 	@Override
 	public void startup() {
 		Socket client;
@@ -73,7 +90,6 @@ public class ChatServerImpl implements ChatServer {
 		throw new UnsupportedOperationException();
 	}
 	
-	// OK
 	@Override
 	public void broadcast(ChatMessage message) {
 		String time = "[" + sdf.format(new Date()) + "]";
@@ -89,9 +105,9 @@ public class ChatServerImpl implements ChatServer {
 		}
 	}
 	
-	// OK
 	@Override
 	public void remove(String username) {
+		//Enviamos un mensaje de desconexion y eliminamos al cliente del diccionario
 		ChatMessage msg = new ChatMessage(0, MessageType.LOGOUT, "You are now disconnected from server!");
 		ServerThreadForClient client = clients.remove(username);
 		clientId--;
@@ -101,7 +117,13 @@ public class ChatServerImpl implements ChatServer {
 			System.err.println("ERROR: could notify logout to user " + client.username + "!");
 		}
 	}
-
+	/**
+	 * Clase interna ServerThreadForClient
+	 * Hilo que gestiona la comunicación entre el cliente y el servidor
+	 * @author Borja Gete & Plamen Petkov
+	 * @version 1.0.0
+	 *
+	 */
 	class ServerThreadForClient extends Thread {
 
 		private int id;
@@ -112,7 +134,10 @@ public class ChatServerImpl implements ChatServer {
 		private ObjectInputStream in;
 		private ObjectOutputStream out;
 		
-		// OK
+		/**
+		 * Constructor
+		 * @param socket 
+		 */
 		public ServerThreadForClient(Socket socket) {
 			this.client = socket;
 			this.logout = false;
@@ -126,12 +151,11 @@ public class ChatServerImpl implements ChatServer {
 			} catch (IOException | ClassNotFoundException e ) {
 				System.err.println("ERROR: could not create connection handler thread!");
 			}
-
+			
 			this.setName(username);
 			System.out.println("Created connection handler for user " + username + "!");
 		}
 		
-		// OK
 		@Override
 		public void run() {
 			try {
@@ -146,12 +170,17 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 		
-		// OK
+		/**
+		 * method loginUser
+		 * Método que responde al cliente, cuando este se conecta satisfactoriamente al servidor
+		 * @param username
+		 * @throws IOException
+		 */
 		private void loginUser(String username) throws IOException {
 			ChatMessage response;
 			String text;
 			String loginTime = sdf.format(new Date());
-
+			//Si existe otro cliente con el mismo nick
 			if (clients.get(username) != null) {
 				text = "Could not connect: username " + username + " already exists!";
 				response = new ChatMessage(0, MessageType.LOGOUT, text);
@@ -164,11 +193,16 @@ public class ChatServerImpl implements ChatServer {
 
 				System.out.println("[" + loginTime + "]: " + username + " has just connected to the server!");
 			}
-
 			out.writeObject(response);
 		}
 		
-		//OK
+		/**
+		 * method listen
+		 * Método que recibe mensajes del cliente y actua en consecuencia
+		 * dependiendo del tipo de mensaje recibido
+		 * @throws ClassNotFoundException
+		 * @throws IOException
+		 */
 		private void listen() throws ClassNotFoundException, IOException {
 			ChatMessage msg = (ChatMessage) in.readObject();
 			switch (msg.getType()) {
@@ -185,15 +219,25 @@ public class ChatServerImpl implements ChatServer {
 			}
 		}
 		
-		//OK
+		/**
+		 * decryptText method
+		 * Método que desencripta texto cifrado con Cesar
+		 * @param text Texto a desencriptar
+		 * @param key Clave recibida para desencriptar
+		 * @return Texto recibido desencriptado o no
+		 */
 		private String decryptText(String text, int key) {
+			//Si el texto no tiene el prefijo, no esta cifrado
 			String prefix = "encrypted#";
 			if (text.startsWith(prefix))
 				return CaesarCipher.decrypt(text.substring(prefix.length()), key);
 			return text;
 		}
 		
-		//OK
+		/**
+		 * close method
+		 * Método que cierra las conexiones con los clientes
+		 */
 		private void close() {
 			try {
 				logout = true;
