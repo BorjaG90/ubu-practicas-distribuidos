@@ -9,9 +9,10 @@ import java.util.Scanner;
 import es.ubu.lsi.common.*;
 
 /**
- * Clase ChatClientImpl Implementación del cliente de chat
+ * Clase ChatClientImpl Implementación del cliente de chat.
  * 
- * @author Borja Gete & Plamen Petkov
+ * @author Borja Gete
+ * @author Plamen Petkov
  * @version 1.0.0
  */
 
@@ -29,11 +30,12 @@ public class ChatClientImpl implements ChatClient {
 	private Scanner input;
 
 	/**
-	 * Constructor
+	 * Constructor. Construye una instancia de ChatClientImpl.
 	 * 
-	 * @param server
-	 * @param port
-	 * @param username
+	 * @param server IP del servidor al que se conecta el cliente.
+	 * @param port Puerto del servidor al que envía las peticiones
+	 * @param username nombre de usuario con el que se conecta.
+	 * @param key clave del usuario con la que se encriptan los mensajes.
 	 */
 	public ChatClientImpl(String server, int port, String username, int key) {
 		this.server = server;
@@ -54,13 +56,11 @@ public class ChatClientImpl implements ChatClient {
 	}
 
 	/**
-	 * main method
+	 * Método main. Metodo principal de ejecución del cliente.
 	 * 
-	 * @param args Pueden ser la clave, usuario y servidor
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	 * @param args argumentos de entrada del programa cliente.
 	 */
-	public static void main(String[] args) throws ClassNotFoundException, IOException {
+	public static void main(String[] args) {
 
 		int key = 3;
 		int port = 1500;
@@ -82,10 +82,10 @@ public class ChatClientImpl implements ChatClient {
 
 		new ChatClientImpl(server, port, username, key).start();
 	}
+	
 	/**
-	 * start method
-	 * Implementacion del metodo start
-	 * Conecta al cliente con el servidor y gestiona el envio de mensajes
+	 * Método start. Inicia el cliente y conecta este cliente con el servidor.
+	 * @return true, si no ha habido error, false en caso contrario.
 	 */
 	@Override
 	public boolean start() {
@@ -110,10 +110,10 @@ public class ChatClientImpl implements ChatClient {
 		}
 		return true;
 	}
+	
 	/**
-	 * sendMessage implementation
-	 * Implementacion del metodo sendMessage
-	 * Metodo que envia un mensaje por el canal al servidor
+	 * Método sendMessage. Permite enviar un mensaje al servidor.
+	 * @param msg el mensaje a enviar.
 	 */
 	@Override
 	public void sendMessage(ChatMessage msg) {
@@ -124,10 +124,9 @@ public class ChatClientImpl implements ChatClient {
 			System.err.println("ERROR: could not send message to server!");
 		}
 	}
+	
 	/**
-	 * disconnect implementation
-	 * Implementacion del metodo disconnect
-	 * Metodo que evita la lectura del canal de entrada y cierra conexiones al servidor
+	 * Método disconnect. Desconecta el cliente del servidor.
 	 */
 	@Override
 	public void disconnect() {
@@ -143,13 +142,13 @@ public class ChatClientImpl implements ChatClient {
 			e.printStackTrace();
 		}
 	}
+	
 	/**
-	 * connect method
-	 * Método que conecta un cliente al servidor.
-	 * La conexion se realiza enviando un mensaje con solicitud de login
-	 * y espera a recibir la respuesta del servidor
-	 * Si el servidor envia un mensaje de tipo logout 
-	 * significa que ya hay un usuario con ese nick
+	 * Método connect. Este método envía una petición de login al servidor
+	 * y se queda a la espera de recibir respuesta. Si la respuesta del servidor
+	 * es LOGOUT, significa que hay un usuario con el nombre de usuario conectado y
+	 * se para la ejecución del cliente. Sino, crea un hilo de escucha de
+	 * mensajes procedenes del servidor.
 	 */
 	private void connect() {
 		ChatMessage msg = new ChatMessage(key, MessageType.MESSAGE, username);
@@ -173,13 +172,15 @@ public class ChatClientImpl implements ChatClient {
 			System.exit(1);
 		}
 	}
+	
 	/**
-	 * encryptText method
-	 * Método que encripta texto mediante cifrado Cesar
-	 * si se le especifica al inicio del texto
-	 * @param text Texto a cifrar
-	 * @param key Clave usada para cifrar
-	 * @return Devuelve el texto recibido cifrado o sin cifrar
+	 * Método encryptText. Encripta un texto con el prefijo "encrypted#"
+	 * utilizando el algoritmo de cifrado de Cesar.
+	 * Si el texto no comienza con el prefijo, se devuelve sin modificar.
+	 * 
+	 * @param text texto a cifrar
+	 * @param key clave usada para cifrar
+	 * @return el texto recibido cifrado o sin cifrar
 	 */
 	private String encryptText(String text, int key) {
 		String prefix = "encrypted#";
@@ -187,9 +188,10 @@ public class ChatClientImpl implements ChatClient {
 			text = prefix + CaesarCipher.encrypt(text.substring(prefix.length()), key);
 		return text;
 	}
+	
 	/**
-	 * printHelp method
-	 * Método que muestra ayuda para el uso del modulo ChatClientImpl
+	 * Método printHelp.
+	 * Muestra un mensaje deayuda para el uso del programa Cliente.
 	 */
 	private static void printHelp() {
 		System.out.println("USAGE:");
@@ -197,15 +199,18 @@ public class ChatClientImpl implements ChatClient {
 		System.out.println("\tOR");
 		System.out.println("\tjava ChatClientImpl <username> <key> (default server: localhost)");
 	}
+	
 	/**
 	 * Clase interna ChatClientListener
-	 * Crea un hilo de escucha que recibe lo que emite el servidor
-	 * @author Borja Gete & Plamen Petyov
-	 *
+	 * Crea un hilo de escucha para losmensajes procedentes del servidor.
+	 * 
+	 * @author Borja Gete
+	 * @author Plamen Petyov
 	 */
 	class ChatClientListener implements Runnable {
 
 		ObjectInputStream in;
+		
 		/**
 		 * Constructor
 		 * @param in Canal de entrada
@@ -213,6 +218,7 @@ public class ChatClientImpl implements ChatClient {
 		public ChatClientListener(ObjectInputStream in) {
 			this.in = in;
 		}
+		
 		/**
 		 * run implementation
 		 * Implementacion del metodo run

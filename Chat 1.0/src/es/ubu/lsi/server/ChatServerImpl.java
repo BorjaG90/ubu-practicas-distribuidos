@@ -34,7 +34,7 @@ public class ChatServerImpl implements ChatServer {
 	 * 
 	 * @throws IOException
 	 */
-	public ChatServerImpl() throws IOException {
+	public ChatServerImpl() {
 		this(DEFAULT_PORT);
 	}
 	/**
@@ -61,7 +61,7 @@ public class ChatServerImpl implements ChatServer {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+	public static void main(String[] args) {
 
 		new ChatServerImpl().startup();
 	}

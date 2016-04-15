@@ -65,7 +65,7 @@ public class ChatMessage implements Serializable {
 	/**
 	 * Sets type.
 	 * 
-	 * @param type
+	 * @param type message type
 	 * @see #getType()
 	 */
 	private void setType(MessageType type) {
