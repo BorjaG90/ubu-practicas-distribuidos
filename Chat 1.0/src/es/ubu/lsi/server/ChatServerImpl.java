@@ -15,7 +15,8 @@ import java.util.Map;
 import es.ubu.lsi.common.*;
 /**
  * Clase ChatServerImpl Implementación del servidor de Chat
- * @author Borja Gete & Plamen Petkov
+ * @author Borja Gete
+ * @author Plamen Petkov
  * @version 1.0.0
  */
 public class ChatServerImpl implements ChatServer {
@@ -31,8 +32,6 @@ public class ChatServerImpl implements ChatServer {
 	ServerSocket server;
 	/**
 	 * Constructor vacío
-	 * 
-	 * @throws IOException
 	 */
 	public ChatServerImpl() {
 		this(DEFAULT_PORT);
@@ -57,9 +56,7 @@ public class ChatServerImpl implements ChatServer {
 	/**
 	 * main method
 	 * 
-	 * @param args
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	 * @param args Argumentos del main
 	 */
 	public static void main(String[] args) {
 
@@ -136,7 +133,8 @@ public class ChatServerImpl implements ChatServer {
 	/**
 	 * Clase interna ServerThreadForClient
 	 * Hilo que gestiona la comunicación entre el cliente y el servidor
-	 * @author Borja Gete & Plamen Petkov
+	 * @author Borja Gete
+	 * @author Plamen Petkov
 	 * @version 1.0.0
 	 *
 	 */
@@ -152,7 +150,7 @@ public class ChatServerImpl implements ChatServer {
 		
 		/**
 		 * Constructor
-		 * @param socket 
+		 * @param socket Socket
 		 */
 		public ServerThreadForClient(Socket socket) {
 			this.client = socket;
@@ -193,8 +191,8 @@ public class ChatServerImpl implements ChatServer {
 		/**
 		 * method loginUser
 		 * Método que responde al cliente, cuando este se conecta satisfactoriamente al servidor
-		 * @param username
-		 * @throws IOException
+		 * @param username Nick del cliente
+		 * @throws IOException Excepcion de entrada/salida
 		 */
 		private void loginUser(String username) throws IOException {
 			ChatMessage response;
@@ -220,8 +218,8 @@ public class ChatServerImpl implements ChatServer {
 		 * method listen
 		 * Método que recibe mensajes del cliente y actua en consecuencia
 		 * dependiendo del tipo de mensaje recibido
-		 * @throws ClassNotFoundException
-		 * @throws IOException
+		 * @throws IOException Excepcion de entrada/salida
+		 * @throws ClassNotFoundException Excepcion de clase no encontrada
 		 */
 		private void listen() throws ClassNotFoundException, IOException {
 			ChatMessage msg = (ChatMessage) in.readObject();
