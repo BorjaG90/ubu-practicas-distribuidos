@@ -21,7 +21,7 @@ public class ChatServerDynamic {
 
 		try {
 			if (System.getSecurityManager() == null) {
-				System.setSecurityManager(new RMISecurityManager());
+				System.setSecurityManager(new SecurityManager());
 			}
 			Properties p = System.getProperties();
 			// lee el codebase
