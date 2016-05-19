@@ -48,4 +48,7 @@ public interface ChatClient extends Remote {
 	 * @throws RemoteException if remote communication has problems
 	 */
 	public abstract String getNickName() throws RemoteException;
+	
+	// TODO: COMMENT
+	public abstract int getPassword() throws RemoteException;
 }

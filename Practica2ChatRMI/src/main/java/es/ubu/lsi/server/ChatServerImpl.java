@@ -2,82 +2,156 @@ package es.ubu.lsi.server;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import es.ubu.lsi.client.ChatClient;
+import es.ubu.lsi.common.CaesarCipher;
 import es.ubu.lsi.common.ChatMessage;
+
 /**
  * Clase ChatServerImpl
+ * 
  * @author Borja Gete
  * @author Plamen Peytov
  *
  */
 public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
-	private List<ChatClient> permitidos = new ArrayList<ChatClient>();
+
+	private static final long serialVersionUID = 1787550739624971220L;
+	private Map<String, ChatClient> clients;
+	private int clientID = 0;
+	private SimpleDateFormat sdf;
+
+
 	/**
 	 * Constructor de la clase ChatServerImpl
-	 * @throws RemoteException Excepción remota surgida en la comunicación
+	 * 
 	 */
-	public ChatServerImpl()throws RemoteException{
+	public ChatServerImpl() throws RemoteException {
 		super();
+		clients = new HashMap<String, ChatClient>();
+		sdf = new SimpleDateFormat("HH:mm:ss");
+		System.out.println("[" + sdf.format(new Date()) + "] Server started!");
 	}
+
 	/**
 	 * Permite a un cliente acceder al chat
-	 * @param client Cliente que solicita acceso
+	 * 
+	 * @param client
+	 *            Cliente que solicita acceso
 	 * @return Identificador del cliente
-	 * @throws RemoteException Excepción remota surgida en la comunicación
+	 * @throws RemoteException
+	 *             Excepción remota surgida en la comunicación
 	 */
 	public int checkIn(ChatClient client) throws RemoteException {
-		if (!permitidos.contains(client)){
-			permitidos.add(client);
+		if (!clients.containsKey(client.getNickName())) {
+			clients.put(client.getNickName(), client);
+			clientID++;
 		}
-		System.out.println(client.getNickName() + " se conectó");
-		return permitidos.indexOf(client);
+
+		System.out.println("[" + sdf.format(new Date()) + "] Connected client "
+				+ client.getNickName() + "with ID " + clientID);
+		
+		String text = "Welcome to Chat RMI 1.0! You are now connected as "
+				+ client.getNickName();
+		privatemsg(client.getNickName(), new ChatMessage(clientID, "Server", text));
+		return clientID;
 	}
+
 	/**
 	 * Echa/Desloguea a un cliente
-	 * @param client Cliente al cual se termina la conexion
-	 * @throws RemoteException Excepción remota surgida en la comunicación
+	 * 
+	 * @param client
+	 *            Cliente al cual se termina la conexion
+	 * @throws RemoteException
+	 *             Excepción remota surgida en la comunicación
 	 */
 	public void logout(ChatClient client) throws RemoteException {
-		permitidos.remove(client);
-		ChatMessage msg ;
-		String text = client.getNickName() + " abandonó el chat";
-		for (ChatClient cli : permitidos) {
-			msg = new ChatMessage(client.getId(),client.getNickName(),"Te has desconectado...");
-			cli.receive(msg);
-		}
-		System.out.println(text);	
+		ChatMessage msg = new ChatMessage(client.getId(), "Server",
+				"You have been disconnected!");
+		
+		privatemsg(client.getNickName(), msg);
+		clients.remove(client);
+		clientID--;
+		
+		System.out.println("[" + sdf.format(new Date()) + "] Disconnected client "
+				+ client.getNickName() + "with ID " + client.getId());
+		
+		String text = client.getNickName() + " has logged out!";
+		msg.setMessage(text);
+		publish(msg);
 	}
+
 	/**
 	 * Permite al destinatario la recepcion de un mensaje privado
-	 * @param tonickname Cliente que recibe el mensaje privado
-	 * @param msg Mensaje privado
-	 * @throws RemoteException Excepción remota surgida en la comunicación
+	 * 
+	 * @param tonickname
+	 *            Cliente que recibe el mensaje privado
+	 * @param msg
+	 *            Mensaje privado
+	 * @throws RemoteException
+	 *             Excepción remota surgida en la comunicación
 	 */
-	public void privatemsg(String tonickname, ChatMessage msg) throws RemoteException{
-		for (ChatClient cli : permitidos) {
-			if (cli.getNickName().equalsIgnoreCase(tonickname)){
-				cli.receive(msg);
-			}
-		}
+	public void privatemsg(String tonickname, ChatMessage msg) throws RemoteException {
+		clients.get(tonickname).receive(msg);
 	}
+
 	/**
 	 * Publica un mensaje recibido
-	 * @param msg Mensaje a publicar
-	 * @throws RemoteException Excepción remota surgida en la comunicación
+	 * 
+	 * @param msg
+	 *            Mensaje a publicar
+	 * @throws RemoteException
+	 *             Excepción remota surgida en la comunicación
 	 */
 	public void publish(ChatMessage msg) throws RemoteException {
-		for(ChatClient cli : permitidos ){
-			if (cli.getId()!=msg.getId())
-				cli.receive(msg);
+		ChatClient client = clients.get(msg.getNickName());
+		String text = "encrypted#" + decryptText(msg.getMessage(), client.getPassword());
+		
+		for (Map.Entry<String, ChatClient> entry : clients.entrySet()) {
+			if (!entry.getKey().equals(msg.getNickName())) {
+				msg.setMessage(encryptText(text, entry.getValue().getPassword()));
+				entry.getValue().receive(msg);
+			}
 		}
 	}
 
 	public void shutdown(ChatClient client) throws RemoteException {
-		// TODO Auto-generated method stub
-		//NO IMPLEMENTAR?
+		throw new RemoteException("Unsupported operation!");
+	}
+	
+	/**
+	 * Método encryptText. Encripta un texto con el prefijo "encrypted#"
+	 * utilizando el algoritmo de cifrado de Cesar.
+	 * Si el texto no comienza con el prefijo, se devuelve sin modificar.
+	 * 
+	 * @param text texto a cifrar
+	 * @param key clave usada para cifrar
+	 * @return el texto recibido cifrado o sin cifrar
+	 */
+	private String encryptText(String text, int key) {
+		String result = "encrypted#";
+		if (text.startsWith(result)) //Si comienza con el prefijo indicado se cifra
+			result = result + CaesarCipher.encrypt(text.substring(result.length()), key);
+		return result;
+	}
+	
+	/**
+	 * decryptText method
+	 * Método que desencripta texto cifrado con Cesar
+	 * @param text Texto a desencriptar
+	 * @param key Clave recibida para desencriptar
+	 * @return Texto recibido desencriptado o no
+	 */
+	private String decryptText(String text, int key) {
+		//Si el texto no tiene el prefijo, no esta cifrado
+		String prefix = "encrypted#";
+		if (text.startsWith(prefix))
+			return CaesarCipher.decrypt(text.substring(prefix.length()), key);
+		return text;
 	}
 
 }

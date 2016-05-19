@@ -46,7 +46,7 @@ public class ChatMessage implements Serializable {
 	 */
 	public ChatMessage(int id, String nickname, String message) {
 		this(id, message);
-		this.setNickname(nickname);
+		this.setNickName(nickname);
 	}
 	
 	/**
@@ -96,7 +96,7 @@ public class ChatMessage implements Serializable {
 	 * @return the nickname
 	 * @see #setNickname(String)
 	 */
-	public String getNickname() {
+	public String getNickName() {
 		return nickname;
 	}
 
@@ -106,7 +106,7 @@ public class ChatMessage implements Serializable {
 	 * @param nickname nickname
 	 * @see #getNickname()
 	 */
-	public void setNickname(String nickname) {
+	public void setNickName(String nickname) {
 		this.nickname = nickname;
 	}
 }

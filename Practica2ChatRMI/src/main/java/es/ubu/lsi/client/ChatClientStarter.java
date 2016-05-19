@@ -1,9 +1,8 @@
 package es.ubu.lsi.client;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.rmi.Naming;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Scanner;
 
 import es.ubu.lsi.common.*;
 import es.ubu.lsi.server.ChatServer;
@@ -15,58 +14,95 @@ import es.ubu.lsi.server.ChatServer;
  *
  */
 public class ChatClientStarter {
-	private static String nick;
-	private static String host;
-	private static int key;
-	private static boolean salir = false;
-	private static String text;
+
+	private String host;
+	private int id;
+	private String nickname;
+	private int password;
+	private boolean logout;
+	private String text;
+
 	public ChatClientStarter(String[] args) throws Exception {
-		if (args.length <= 1) {
-			System.err.println("Error en los argumentos. Apodo + clave+ host ");
-			System.exit(1);
+
+		switch (args.length) {
+			case 2:
+				host = "localhost";
+				nickname = args[0];
+				password = Integer.parseInt(args[1]);
+				break;
+			case 3:
+				host = args[0];
+				nickname = args[1];
+				password = Integer.parseInt(args[2]);
+				break;
+			default:
+				System.out.println("Invalid number of arguments!");
+				printHelp();
+				System.exit(1);
+
 		}
-		if (args.length == 2) {
-			nick = args[0];
-			key = Integer.parseInt(args[1]);
-			host = "localhost";
-		} else {
-			nick = args[0];
-			key = Integer.parseInt(args[1]);
-			host = args[2];
-		}
+		
+		this.logout = false;
 		start();
 	}
-	public void start() throws Exception {
-		try {
-			ChatClient cliente = new ChatClientImpl(nick);
-			ChatServer servidor = (ChatServer) Naming.lookup("rmi://" + host
-					+ "/ChatServer");
-			int id;
-			id = servidor.checkIn(cliente);
-			cliente.setId(id);
 
-			BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-			String entrada;
-			while (!salir && (entrada = stdin.readLine()) != null) {
-				text = entrada;
-				System.out.println(" ");
-				if (text.equalsIgnoreCase("logout")) {
-					salir = true;
+	public void start() {
+		try {
+			// Comprobar exportacion del cliente
+			ChatClient client = new ChatClientImpl(nickname, password);
+			ChatServer server = (ChatServer) Naming.lookup("rmi://" + host + "/ChatServer");
+			ChatMessage msg;
+			
+			Scanner input = new Scanner(System.in);
+			
+			this.id = server.checkIn(client);
+			client.setId(this.id); // se puede hacer en el servidor
+			
+			while(!logout) {
+				System.out.println(">>>");
+				if((text = input.next()).equalsIgnoreCase("logout")) {
+					this.logout = true;
 					System.out.println("Shutting down client now...");
-					servidor.logout(cliente);
-					UnicastRemoteObject.unexportObject(cliente, true);
+					server.logout(client);
+					UnicastRemoteObject.unexportObject(client, true);
+					input.close();
+					// VER SI HACE FALTA PONER UN MENSAJE PARA NOTIFICAR A OTROS USUARIOS EL LOGOUT
+				} else {
+					msg = new ChatMessage(id, this.nickname, encryptText(text, this.password));
+					server.publish(msg);
 				}
-				else if (text.equalsIgnoreCase("encrypted")){
-					ChatMessage msg = new ChatMessage(cliente.getId(),cliente.getNickName(), CaesarCipher.encrypt(text, key));
-					servidor.publish(msg);
-				}else{
-					ChatMessage msg = new ChatMessage(cliente.getId(),cliente.getNickName(), text);
-					servidor.publish(msg);
-				}
-					
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			// TODO GESTION DE ERRORES
 		}
 	}
+	
+	/**
+	 * Método encryptText. Encripta un texto con el prefijo "encrypted#"
+	 * utilizando el algoritmo de cifrado de Cesar.
+	 * Si el texto no comienza con el prefijo, se devuelve sin modificar.
+	 * 
+	 * @param text texto a cifrar
+	 * @param key clave usada para cifrar
+	 * @return el texto recibido cifrado o sin cifrar
+	 */
+	private String encryptText(String text, int key) {
+		String result = "encrypted#";
+		if (text.startsWith(result)) //Si comienza con el prefijo indicado se cifra
+			result = result + CaesarCipher.encrypt(text.substring(result.length()), key);
+		return result;
+	}
+	
+	/**
+	 * Método printHelp. Muestra un mensaje deayuda para el uso del programa
+	 * Cliente.
+	 */
+	private static void printHelp() {
+		System.out.println("USAGE:");
+		System.out.println("\tcliente.bat <server_address> <username> <password>");
+		System.out.println("\tOR");
+		System.out.println("\tcliente.bat <username> <key> (default server: localhost)");
+	}
+	
 }
