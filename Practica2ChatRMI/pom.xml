@@ -22,4 +22,45 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+  <build>
+  	<plugins>
+  		<!-- Copia los ficheros .class en el servidor dinamico -->
+  		<plugin>
+  			<artifactId>maven-antrun-plugin</artifactId>
+  			<executions>
+  				<execution>
+  					<phase>package</phase>
+  					<configuration>
+  						<tasks>
+  							<copy todir="../Practica2ChatRMI-Web/src/main/webapp">
+  								<fileset dir="./target/classes">
+  									<exclude name="**/*Dynamic.class"/>
+  								</fileset>
+  							</copy>
+  						</tasks>
+  					</configuration>
+  					<goals>
+  						<goal>run</goal>
+  					</goals>
+  				</execution>
+  			</executions>
+  			
+  		</plugin>
+  		
+   		
+  		<!-- Empaqueta solo las clases ChatClientDynamic y ChatServerDynamic -->
+  		<plugin>
+  			<artifactId>maven-jar-plugin</artifactId>
+  			<version>2.4</version>
+  			<configuration>
+  				<includes>
+  					<include>**/ChatClientDynamic.*</include>
+  					<include>**/ChatServerDynamic.*</include>
+  				</includes>
+  			</configuration>
+  		</plugin>
+  		
+  	</plugins>
+  </build>
 </project>

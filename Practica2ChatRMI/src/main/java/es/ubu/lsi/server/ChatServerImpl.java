@@ -109,49 +109,21 @@ public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 	 */
 	public void publish(ChatMessage msg) throws RemoteException {
 		ChatClient client = clients.get(msg.getNickName());
-		String text = "encrypted#" + decryptText(msg.getMessage(), client.getPassword());
+		// Desencripta el mensaje del remitente
+		String text = "encrypted#" + CaesarCipher.decryptText(msg.getMessage(),
+				client.getPassword());
 		
-		for (Map.Entry<String, ChatClient> entry : clients.entrySet()) {
-			if (!entry.getKey().equals(msg.getNickName())) {
-				msg.setMessage(encryptText(text, entry.getValue().getPassword()));
-				entry.getValue().receive(msg);
+		for (ChatClient c : clients.values()) {
+			if (!c.getNickName().equals(msg.getNickName())) {
+				// Encripta el mensaje con el password del destinatario
+				msg.setMessage(CaesarCipher.encryptText(text, c.getPassword()));
+				privatemsg(c.getNickName(), msg);
 			}
 		}
 	}
 
 	public void shutdown(ChatClient client) throws RemoteException {
 		throw new RemoteException("Unsupported operation!");
-	}
-	
-	/**
-	 * Método encryptText. Encripta un texto con el prefijo "encrypted#"
-	 * utilizando el algoritmo de cifrado de Cesar.
-	 * Si el texto no comienza con el prefijo, se devuelve sin modificar.
-	 * 
-	 * @param text texto a cifrar
-	 * @param key clave usada para cifrar
-	 * @return el texto recibido cifrado o sin cifrar
-	 */
-	private String encryptText(String text, int key) {
-		String result = "encrypted#";
-		if (text.startsWith(result)) //Si comienza con el prefijo indicado se cifra
-			result = result + CaesarCipher.encrypt(text.substring(result.length()), key);
-		return result;
-	}
-	
-	/**
-	 * decryptText method
-	 * Método que desencripta texto cifrado con Cesar
-	 * @param text Texto a desencriptar
-	 * @param key Clave recibida para desencriptar
-	 * @return Texto recibido desencriptado o no
-	 */
-	private String decryptText(String text, int key) {
-		//Si el texto no tiene el prefijo, no esta cifrado
-		String prefix = "encrypted#";
-		if (text.startsWith(prefix))
-			return CaesarCipher.decrypt(text.substring(prefix.length()), key);
-		return text;
 	}
 
 }

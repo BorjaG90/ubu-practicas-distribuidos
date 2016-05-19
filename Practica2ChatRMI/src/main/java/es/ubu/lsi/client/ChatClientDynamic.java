@@ -32,8 +32,10 @@ public class ChatClientDynamic {
 			clientClass = RMIClassLoader.loadClass(url,
 					"es.ubu.lsi.client.ChatClientStarter");
 			// Starts client
-			Constructor<?> cons = clientClass.getConstructor(String[].class);			
+			Constructor<?> cons = clientClass.getConstructor(String[].class);
 			cons.newInstance((Object)args);
+//			ChatClientStarter ccs = (ChatClientStarter)cons.newInstance((Object)args);
+//			ccs.start();
 		} catch (Exception e) {
 			System.err.println("Excepcion en arranque del cliente " + e.toString());
 		}

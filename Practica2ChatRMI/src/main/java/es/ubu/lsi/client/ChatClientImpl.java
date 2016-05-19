@@ -72,7 +72,7 @@ public class ChatClientImpl implements ChatClient {
 	 *             Excepción remota surgida en la comunicación
 	 */
 	public void receive(ChatMessage msg) throws RemoteException {
-		String text = decryptText(msg.getMessage(), this.password);
+		String text = CaesarCipher.decryptText(msg.getMessage(), this.password);
 		
 		System.out.println("[" + sdf.format(new Date()) + "]"
 				+ msg.getNickName() + ": " + text);
@@ -94,19 +94,4 @@ public class ChatClientImpl implements ChatClient {
 		return this.password;
 	}
 	
-	/**
-	 * decryptText method
-	 * Método que desencripta texto cifrado con Cesar
-	 * @param text Texto a desencriptar
-	 * @param key Clave recibida para desencriptar
-	 * @return Texto recibido desencriptado o no
-	 */
-	private String decryptText(String text, int key) {
-		//Si el texto no tiene el prefijo, no esta cifrado
-		String prefix = "encrypted#";
-		if (text.startsWith(prefix))
-			return CaesarCipher.decrypt(text.substring(prefix.length()), key);
-		return text;
-	}
-
 }
