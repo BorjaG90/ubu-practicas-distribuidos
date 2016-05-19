@@ -1,11 +1,10 @@
-.class
+#----- Files
+*.class
+*.jar
 
-
-
+#----- Directories
 .metadata/
-
+.settings
 RemoteSystemsTempFiles/
-
 .recommenders
-
-Chat1.0/target/
+target/
