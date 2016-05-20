@@ -33,7 +33,6 @@ public class ChatServerDynamic {
 			serverClass.newInstance();
 		} catch (Exception e) {
 			System.err.println("Excepcion en arranque del servidor " + e.toString());
-			e.printStackTrace();
 		}	
 	}
 

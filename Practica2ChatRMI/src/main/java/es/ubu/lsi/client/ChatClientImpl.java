@@ -27,7 +27,7 @@ public class ChatClientImpl extends UnicastRemoteObject implements ChatClient {
 	/**
 	 * Constructor de la clase ChatClientImpl
 	 * 
-	 * @param nick
+	 * @param nickname
 	 *            Apodo del Cliente
 	 * @param password
 	 *            contraseña para encriptar los mensajes
@@ -66,8 +66,6 @@ public class ChatClientImpl extends UnicastRemoteObject implements ChatClient {
 
 	/**
 	 * Recibe y muestra un mensaje con un determinado formato:
-	 * 
-	 * Apodo: '-> Mensaje
 	 * 
 	 * @param msg
 	 *            Mensaje recibido

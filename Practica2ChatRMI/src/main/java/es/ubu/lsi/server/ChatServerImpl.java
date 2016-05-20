@@ -29,7 +29,8 @@ public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 
 	/**
 	 * Constructor de la clase ChatServerImpl
-	 * 
+	 * @throws RemoteException
+	 *             Excepción remota surgida en la comunicación
 	 */
 	public ChatServerImpl() throws RemoteException {
 		super();

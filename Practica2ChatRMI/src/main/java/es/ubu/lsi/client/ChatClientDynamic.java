@@ -36,7 +36,6 @@ public class ChatClientDynamic {
 			cons.newInstance((Object)args);
 		} catch (Exception e) {
 			System.err.println("Excepcion en arranque del cliente " + e.toString());
-			e.printStackTrace();
 		}
 	}
 }
