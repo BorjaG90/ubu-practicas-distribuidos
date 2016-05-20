@@ -21,6 +21,7 @@ import es.ubu.lsi.common.ChatMessage;
 public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 
 	private static final long serialVersionUID = 1787550739624971220L;
+	
 	private Map<String, ChatClient> clients;
 	private int clientID = 0;
 	private SimpleDateFormat sdf;
@@ -47,18 +48,23 @@ public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 	 *             Excepción remota surgida en la comunicación
 	 */
 	public int checkIn(ChatClient client) throws RemoteException {
-		if (!clients.containsKey(client.getNickName())) {
+		String text;
+		if (clients.containsKey(client.getNickName())) {
+			text = "User already exists with nickname " + client.getNickName();
+			client.receive(new ChatMessage(0, "Server", text));
+			return 0;
+		} else {
 			clients.put(client.getNickName(), client);
 			clientID++;
-		}
 
-		System.out.println("[" + sdf.format(new Date()) + "] Connected client "
-				+ client.getNickName() + "with ID " + clientID);
-		
-		String text = "Welcome to Chat RMI 1.0! You are now connected as "
-				+ client.getNickName();
-		privatemsg(client.getNickName(), new ChatMessage(clientID, "Server", text));
-		return clientID;
+			System.out.println("[" + sdf.format(new Date()) + "] Connected client "
+					+ client.getNickName() + " with ID " + clientID);
+			text = "Welcome to Chat RMI 1.0! You are now connected as "
+					+ client.getNickName();
+			
+			privatemsg(client.getNickName(), new ChatMessage(clientID, "Server", text));
+			return clientID;
+		}
 	}
 
 	/**
@@ -70,19 +76,22 @@ public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 	 *             Excepción remota surgida en la comunicación
 	 */
 	public void logout(ChatClient client) throws RemoteException {
+		String text = "You have been disconnected!";
 		ChatMessage msg = new ChatMessage(client.getId(), "Server",
 				"You have been disconnected!");
 		
 		privatemsg(client.getNickName(), msg);
-		clients.remove(client);
+		
+		clients.remove(client.getNickName());
 		clientID--;
 		
-		System.out.println("[" + sdf.format(new Date()) + "] Disconnected client "
-				+ client.getNickName() + "with ID " + client.getId());
-		
-		String text = client.getNickName() + " has logged out!";
+		text = client.getNickName() + " has logged out!";
+		msg.setNickName("Server");
 		msg.setMessage(text);
 		publish(msg);
+		
+		System.out.println("[" + sdf.format(new Date()) + "] Disconnected client "
+				+ client.getNickName() + " with ID " + client.getId());
 	}
 
 	/**
@@ -108,15 +117,20 @@ public class ChatServerImpl extends UnicastRemoteObject implements ChatServer {
 	 *             Excepción remota surgida en la comunicación
 	 */
 	public void publish(ChatMessage msg) throws RemoteException {
-		ChatClient client = clients.get(msg.getNickName());
-		// Desencripta el mensaje del remitente
-		String text = "encrypted#" + CaesarCipher.decryptText(msg.getMessage(),
-				client.getPassword());
+		
+		String text = msg.getMessage();
+		String nickname = msg.getNickName();
+		
+		if(msg.isEncrypted()) {
+			ChatClient client = clients.get(nickname);
+			text = CaesarCipher.decrypt(text, client.getPassword());
+			System.out.println("DECRYPTED MSG: " + text);
+		}
 		
 		for (ChatClient c : clients.values()) {
-			if (!c.getNickName().equals(msg.getNickName())) {
-				// Encripta el mensaje con el password del destinatario
-				msg.setMessage(CaesarCipher.encryptText(text, c.getPassword()));
+			if (!c.getNickName().equals(nickname)) {
+				if(msg.isEncrypted())
+					msg.setMessage(CaesarCipher.encrypt(text, c.getPassword()));
 				privatemsg(c.getNickName(), msg);
 			}
 		}

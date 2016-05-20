@@ -1,6 +1,7 @@
 package es.ubu.lsi.client;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -14,8 +15,10 @@ import es.ubu.lsi.common.ChatMessage;
  * @author Plamen Peytov
  *
  */
-public class ChatClientImpl implements ChatClient {
+public class ChatClientImpl extends UnicastRemoteObject implements ChatClient {
 
+	private static final long serialVersionUID = -677605033768763775L;
+	
 	private int id;
 	private String nickname;
 	private final int password;
@@ -72,11 +75,14 @@ public class ChatClientImpl implements ChatClient {
 	 *             Excepción remota surgida en la comunicación
 	 */
 	public void receive(ChatMessage msg) throws RemoteException {
-		String text = CaesarCipher.decryptText(msg.getMessage(), this.password);
+		
+		String text = msg.getMessage();
+		if(msg.isEncrypted())
+			text = CaesarCipher.decrypt(text, this.password);
 		
 		System.out.println("[" + sdf.format(new Date()) + "]"
 				+ msg.getNickName() + ": " + text);
-		System.out.println(">>>");
+		System.out.print(">>>");
 	}
 
 	/**

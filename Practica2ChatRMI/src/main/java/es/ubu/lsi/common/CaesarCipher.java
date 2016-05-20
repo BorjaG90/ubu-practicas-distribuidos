@@ -17,9 +17,10 @@ public class CaesarCipher {
 	 * @return el texto encriptado
 	 */
 	public static String encrypt(String text, int key) {
-		StringBuilder result = new StringBuilder(text.length());
-		for (int i = 0; i < text.length(); i++)
-			result.append((char) ((int) (text.charAt(i)) + key % 255));
+		String copy = new String(text);
+		StringBuilder result = new StringBuilder(copy.length());
+		for (int i = 0; i < copy.length(); i++)
+			result.append((char) ((int) (copy.charAt(i)) + key % 255));
 		return result.toString();
 	}
 	
@@ -32,40 +33,11 @@ public class CaesarCipher {
 	 * @return el texto original
 	 */
 	public static String decrypt(String text, int key) {
-		StringBuilder result = new StringBuilder(text.length());
-		for (int i = 0; i < text.length(); i++)
-			result.append((char) ((int) (text.charAt(i)) - key % 255));
+		String copy = new String(text);
+		StringBuilder result = new StringBuilder(copy.length());
+		for (int i = 0; i < copy.length(); i++)
+			result.append((char) ((int) (copy.charAt(i)) - key % 255));
 		return result.toString();
 	}
-		
-	/**
-	 * Método encryptText. Encripta un texto con el prefijo "encrypted#"
-	 * utilizando el algoritmo de cifrado de Cesar.
-	 * Si el texto no comienza con el prefijo, se devuelve sin modificar.
-	 * 
-	 * @param text texto a cifrar
-	 * @param key clave usada para cifrar
-	 * @return el texto recibido cifrado o sin cifrar
-	 */
-	public static String encryptText(String text, int key) {
-		String result = "encrypted#";
-		if (text.startsWith(result)) //Si comienza con el prefijo indicado se cifra
-			result = result + encrypt(text.substring(result.length()), key);
-		return result;
-	}
 	
-	/**
-	 * decryptText method
-	 * Método que desencripta texto cifrado con Cesar
-	 * @param text Texto a desencriptar
-	 * @param key Clave recibida para desencriptar
-	 * @return Texto recibido desencriptado o no
-	 */
-	public static String decryptText(String text, int key) {
-		//Si el texto no tiene el prefijo, no esta cifrado
-		String prefix = "encrypted#";
-		if (text.startsWith(prefix))
-			return decrypt(text.substring(prefix.length()), key);
-		return text;
-	}
 }

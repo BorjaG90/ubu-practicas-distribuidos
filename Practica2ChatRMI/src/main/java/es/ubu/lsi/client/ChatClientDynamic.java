@@ -34,10 +34,9 @@ public class ChatClientDynamic {
 			// Starts client
 			Constructor<?> cons = clientClass.getConstructor(String[].class);
 			cons.newInstance((Object)args);
-//			ChatClientStarter ccs = (ChatClientStarter)cons.newInstance((Object)args);
-//			ccs.start();
 		} catch (Exception e) {
 			System.err.println("Excepcion en arranque del cliente " + e.toString());
+			e.printStackTrace();
 		}
 	}
 }

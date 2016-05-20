@@ -39,9 +39,8 @@ public class ChatClientStarter {
 			printHelp();
 			System.exit(1);
 		}
-
+		
 		this.logout = false;
-		// ESTO NO ESTA BIEN AQUI
 		start();
 	}
 
@@ -52,24 +51,34 @@ public class ChatClientStarter {
 		ChatMessage msg;
 		String text;
 		Scanner input;
-
+		
 		this.id = server.checkIn(client);
+		if(this.id < 1) {
+			this.logout = true;
+			server.logout(client);
+		}
+			
 		client.setId(this.id);
-
 		input = new Scanner(System.in);
 		while (!logout) {
-			System.out.println(">>>");
-			if ((text = input.next()).equalsIgnoreCase("logout")) {
+			if ((text = input.nextLine()).equalsIgnoreCase("logout")) {
 				System.out.println("Shutting down client...");
 				this.logout = true;
 				server.logout(client);
-				input.close();
-				UnicastRemoteObject.unexportObject(client, true);
 			} else {
-				msg = new ChatMessage(id, this.nickname, CaesarCipher.encryptText(text, this.password));
+				msg = new ChatMessage(this.id, this.nickname, text);
+				if(text.startsWith("encrypted#")) {
+					text = CaesarCipher.encrypt(
+							text.substring("encrypted#".length()), this.password);
+					msg.setEncrypted(true);
+					msg.setMessage(text);
+				}
 				server.publish(msg);
 			}
+			System.out.print(">>>");
 		}
+		input.close();
+		UnicastRemoteObject.unexportObject(client, true);
 	}
 
 	/**

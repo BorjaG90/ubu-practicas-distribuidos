@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>es.ubu.lsi</groupId>
-  <artifactId>chat-rmi-1-0</artifactId>
+  <artifactId>Practica2ChatRMI</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -35,7 +35,8 @@
   						<tasks>
   							<copy todir="../Practica2ChatRMI-Web/src/main/webapp">
   								<fileset dir="./target/classes">
-  									<exclude name="**/*Dynamic.class"/>
+  									<exclude name="**/ChatClientDynamic.class"/>
+  									<exclude name="**/ChatServerDynamic.class"/>
   								</fileset>
   							</copy>
   						</tasks>
@@ -47,7 +48,6 @@
   			</executions>
   			
   		</plugin>
-  		
    		
   		<!-- Empaqueta solo las clases ChatClientDynamic y ChatServerDynamic -->
   		<plugin>

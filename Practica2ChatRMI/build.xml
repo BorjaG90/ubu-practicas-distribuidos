@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Chat 1.0" default="javadoc" basedir=".">
+	<description>Build.xml file for javadoc documentation</description>
+
+	<property name="doc.dir" value="${basedir}/doc" />
+	<property name="src.dir" value="${basedir}/src" />
+	
+	<!-- Executes all targets -->
+	<target name="all" depends="clean, mkdir, javadoc" description="Execute all tasks." />
+	
+	<!-- Makes documentation directory -->
+	<target name="mkdir" description="Create directories">
+		<mkdir dir="${doc.dir}" />
+	</target>
+
+	<!-- Generates javadoc -->
+	<target name="javadoc" depends="mkdir" description="Generate documentation.">
+		<javadoc encoding="WINDOWS-1252" charset="UTF-8" docencoding="UTF-8" destdir="${doc.dir}" source="1.8" access="private">
+			<fileset dir="${src.dir}" casesensitive="yes">
+				<include name="**/*.java" />
+			</fileset>
+		</javadoc>
+	</target>
+	
+	<!-- Deletes generated documentation -->
+	<target name="clean" description="Clean working directory.">
+		<delete dir="${doc.dir}" />
+	</target>	
+</project>

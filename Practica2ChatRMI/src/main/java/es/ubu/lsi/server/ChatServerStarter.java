@@ -7,6 +7,5 @@ public class ChatServerStarter {
 
 	public ChatServerStarter() throws Exception {
         Naming.rebind("/ChatServer", (Remote) new ChatServerImpl());
-        System.out.println("Server registered successfully!");
 	}
 }

@@ -26,6 +26,9 @@ public class ChatMessage implements Serializable {
 	/** Client id. */
 	private int id;
 	
+	/** Encrypted **/
+	private boolean isEncrypted;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -35,6 +38,7 @@ public class ChatMessage implements Serializable {
 	public ChatMessage(int id, String message) {
 		this.setId(id);
 		this.setMessage(message);
+		this.setEncrypted(false); 
 	}
 	
 	/**
@@ -94,7 +98,7 @@ public class ChatMessage implements Serializable {
 	 * Gets nickname.
 	 * 
 	 * @return the nickname
-	 * @see #setNickname(String)
+	 * @see #setNickName(String)
 	 */
 	public String getNickName() {
 		return nickname;
@@ -104,10 +108,30 @@ public class ChatMessage implements Serializable {
 	 * Sets nickname.
 	 * 
 	 * @param nickname nickname
-	 * @see #getNickname()
+	 * @see #getNickName()
 	 */
 	public void setNickName(String nickname) {
 		this.nickname = nickname;
+	}
+	
+	/**
+	 * Checks if the message is encrypted
+	 * 
+	 * @return message's status
+	 * @see #setEncrypted(boolean)
+	 */
+	public boolean isEncrypted() {
+		return isEncrypted;
+	}
+	
+	/**
+	 * Sets encrypted status
+	 * 
+	 * @param isEncrypted message's status
+	 * @see #isEncrypted()
+	 */
+	public void setEncrypted(boolean isEncrypted) {
+		this.isEncrypted = isEncrypted;
 	}
 }
 
