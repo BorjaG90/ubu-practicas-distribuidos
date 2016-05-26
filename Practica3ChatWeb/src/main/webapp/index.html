@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chat</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>
+    	function login()
+    	{
+    		var value=document.forms["login"]["nickname"].value;
+    		var key=document.forms["login"]["key"].value;
+    		if (value==null || value==""){
+    			alert("Nickname field can't be empty");
+    			return false;
+    		}
+    		if (key==null || value==""){
+    			alert("Key field can't be empty");
+    			return false;
+    		}
+    	}
+    </script>
+	</head>
+	<body>
+	<h1>Chat</h1>
+	<form id="form1" action="loginUser" method="post" onsubmit="return login()" name="login">
+		<p>Nickname</p>
+		<input type="text" name="nickname"/>
+		<br>
+		<p>Encryption Key</p>
+		<input type="number" name="key"/>
+		<br>
+		<br>
+		<input type="submit" name="send" value="Login"/>
+		<input type="reset" name="reset" value="Reset"/>
+		<br>
+	</form>
+	</body>
+</html>
