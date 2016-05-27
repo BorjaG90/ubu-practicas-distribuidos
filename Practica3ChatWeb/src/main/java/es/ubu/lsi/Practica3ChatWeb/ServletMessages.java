@@ -34,30 +34,34 @@ public class ServletMessages extends HttpServlet{
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
-		String nick = (String) session.getAttribute("nickname");
-		Integer key = (Integer) session.getAttribute("key");
-		String msg = new String(request.getParameter("message").getBytes("ISO-8859-1"), "UTF-8");
-		String isEncrypted = request.getParameter("isEncrypted");
-		String message = "";
-		Date date = new Date();
-		DateFormat hour = new SimpleDateFormat("HH:mm:ss");
-
-		//Añadir nuevo mensaje:
-		ServletContext context = getServletContext();
-		List<String> messages = (List<String>) context.getAttribute("messages");
-		if(isEncrypted.equals("true")){
-			msg=Cesar.descifrar(msg, key);
-		}
-		message = hour.format(date) +  " " + nick + " --> " + msg;
-
-		messages.add(message);
+		if (session.getAttribute("nickname")!=null){
+			String nick = (String) session.getAttribute("nickname");
+			Integer key = (Integer) session.getAttribute("key");
+			String msg = new String(request.getParameter("message").getBytes("ISO-8859-1"), "UTF-8");
+			String isEncrypted = request.getParameter("isEncrypted");
+			String message = "";
+			Date date = new Date();
+			DateFormat hour = new SimpleDateFormat("HH:mm:ss");
+			//Añadir nuevo mensaje:
+			ServletContext context = getServletContext();
+			List<String> messages = (List<String>) context.getAttribute("messages");
+			out.println(msg);
+			if(isEncrypted.equals("true")){
+				msg=Cesar.descifrar(msg, key);
+			}
+			message = hour.format(date) +  " " + nick + " --> " + msg;
 	
-		RequestDispatcher dispatcher = this.getServletContext().getRequestDispatcher("/chatroom.jsp");
+			messages.add(message);
 		
-		if (dispatcher == null) { 
-			response.sendError(response.SC_NO_CONTENT); 
-		} else {
-			dispatcher.include(request, response);
+			RequestDispatcher dispatcher = this.getServletContext().getRequestDispatcher("/chatroom.jsp");
+			
+			if (dispatcher == null) { 
+				response.sendError(response.SC_NO_CONTENT); 
+			} else {
+				dispatcher.include(request, response);
+			}
+		}else{
+			response.sendRedirect("index.html");
 		}
 	}
 	protected void doPost(HttpServletRequest request,

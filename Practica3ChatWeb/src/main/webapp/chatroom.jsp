@@ -3,22 +3,24 @@
 	<head>
 		<script> 
 		setInterval(refreshIframe, 5000); //establece el tiempo a 5 seg.
-		function refreshIframe() {  //recarga el iframe de la página
+		function refreshIframe() {� //recarga el iframe de la página
 			frames[0].location.reload(true);
+			frames[0].scrollBy(0,frames[0].innerHeight*5)
 		}
 		function sendMessages()
 		{
 			var value=document.forms["sMsg"]["msg"].value; 
 			var encrypt=document.forms["sMsg"]["cypher"].checked;
+			var key=document.forms["sMsg"]["theKey"].value;
 			if (value==null || value==""){
 				alert("The message can't be empty"); return false;
 			}
-			document.forms["sMsg"]["isEncrypted"].value="false";
 			if (encrypt){
 				//Encriptamos
-				value=cesar(value,key,false);
-				document.forms["sMsg"]["isEncrypted"].value="true";
+				value=cesar(value,key,true);
+				//value=value2
 			}
+			document.forms["sMsg"]["isEncrypted"].value=encrypt;
 			//Rellenamos el campo oculto
 			document.forms["sMsg"]["message"].value=value;
 		}
@@ -51,6 +53,9 @@
 		<br/>
 		<iframe src="conversation" width=360 height=150>Error loading chat messages</iframe>
 		<form id="form2" action="sendMsg" method="post" onsubmit="return sendMessages()" name="sMsg">
+
+			<input id="buttonRefresh" type="button" name="refresh" value="Refresh" onclick="return refreshIframe()" />
+			<br/>
 			<textarea id="fieldMsg" name="msg" rows="4" cols="40" defaultValue="Write your message here"></textarea>
 			<input id="boxCypher" type="checkbox" name="cypher" > Encrypted
 			<br/>	
@@ -58,7 +63,7 @@
 			<input id="buttonClear" type="reset" name="clear" value="Clear" />
 			<input id="hiddenMsg" type="hidden" name="message"/>
 			<input id="hiddenCyph" type="hidden" name="isEncrypted"/>
-
+			<input id="hiddenKey" type="hidden" name="theKey" value="<%=session.getAttribute("key")%>"/>
 		</form>   
 		<br/>
 		<a href="logoutUser?nick=${users} ">Logout</a>
