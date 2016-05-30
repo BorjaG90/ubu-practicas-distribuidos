@@ -17,7 +17,7 @@
 			}
 			if (encrypt){
 				//Encriptamos
-				value=cesar(value,key,true);
+				value=cesar(value,key,false);
 				//value=value2
 			}
 			document.forms["sMsg"]["isEncrypted"].value=encrypt;

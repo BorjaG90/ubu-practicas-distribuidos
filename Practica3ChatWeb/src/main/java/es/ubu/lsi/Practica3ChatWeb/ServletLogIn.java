@@ -28,26 +28,31 @@ public class ServletLogIn extends HttpServlet{
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
-		String nick = new String(request.getParameter("nickname").getBytes("ISO-8859-1"), "UTF-8");
-		Integer key = new Integer(request.getParameter("key"));
-		ServletContext context = getServletContext();
-		//Vinculo la sesion a su usuario
-		if(session.getAttribute("nickname")  == null){
-			session.setAttribute("nickname", nick);
-			session.setAttribute("key", key);
+		if (request.getParameter("nickname")!=null){
+			String nick = new String(request.getParameter("nickname").getBytes("ISO-8859-1"), "UTF-8");
+			Integer key = new Integer(request.getParameter("key"));
+			ServletContext context = getServletContext();
 			
-			List<String> messages = (List<String>) context.getAttribute("messages");
-			String first = nick + " is connected";
-			messages.add(first);
-			List<String> users = (List<String>) context.getAttribute("users");
-			users.add(nick);
-		}
-		
-		RequestDispatcher dispatcher = this.getServletContext().getRequestDispatcher("/chatroom.jsp");
-		if (dispatcher == null) { 
-			response.sendError(response.SC_NO_CONTENT); 
-		} else {
-			dispatcher.include(request, response);
+			//Vinculo la sesion a su usuario
+			if(session.getAttribute("nickname")  == null){
+				session.setAttribute("nickname", nick);
+				session.setAttribute("key", key);
+				
+				List<String> messages = (List<String>) context.getAttribute("messages");
+				String first = nick + " is connected";
+				messages.add(first);
+				List<String> users = (List<String>) context.getAttribute("users");
+				users.add(nick);
+			}
+			
+			RequestDispatcher dispatcher = this.getServletContext().getRequestDispatcher("/chatroom.jsp");
+			if (dispatcher == null) { 
+				response.sendError(response.SC_NO_CONTENT); 
+			} else {
+				dispatcher.include(request, response);
+			}
+		}else{
+			response.sendRedirect("index.html");
 		}
 	}
 	protected void doPost(HttpServletRequest request,

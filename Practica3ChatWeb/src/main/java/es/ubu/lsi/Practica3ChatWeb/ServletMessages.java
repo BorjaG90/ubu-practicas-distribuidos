@@ -45,7 +45,6 @@ public class ServletMessages extends HttpServlet{
 			//Añadir nuevo mensaje:
 			ServletContext context = getServletContext();
 			List<String> messages = (List<String>) context.getAttribute("messages");
-			out.println(msg);
 			if(isEncrypted.equals("true")){
 				msg=Cesar.descifrar(msg, key);
 			}
