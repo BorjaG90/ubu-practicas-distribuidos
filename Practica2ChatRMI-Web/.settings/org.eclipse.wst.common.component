@@ -5,6 +5,6 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <property name="java-output-path" value="/Practica2ChatRMI-Web/target/classes"/>
-        <property name="context-root" value="Practica2ChatRMI-Web"/>
+        <property name="context-root" value="chat-rmi-1-0-web"/>
     </wb-module>
 </project-modules>
