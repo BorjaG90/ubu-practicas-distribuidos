@@ -3,6 +3,9 @@
 	<head>
 		<title>Chat</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="author" content="Borja Gete">
+        <meta name="author" content="Plamen Peytov">
+        <meta name="description" content="Práctica 3 ChatWeb">
         <script>
     	function validate()
     	{
@@ -23,20 +26,40 @@
     		var key=document.forms["login"]["key"].value;
     	}
     	</script>
+    	<style>
+			body {
+			    background-color: grey;
+			    font-family: Calibri,Verdana,Serif,Arial;
+			}
+			div{
+				background-color: linen;
+				align: center;
+				border-radius: 10px;
+			}
+			p{align:center;}
+			div#contenedor{
+				padding: 1em 3em;
+ 				margin: 1em 25% auto;
+			}
+		</style>
 	</head>
 	<body>
-	<h1>Chat</h1>
-	<form id="form1" action="loginUser" method="post" onsubmit="return validate()" name="login">
-		<p>Nickname</p>
-		<input type="text" name="nickname" required/>
-		<br>
-		<p>Encryption Key</p>
-		<input type="number" name="key" required/>
-		<br>
-		<br>
-		<input type="submit" value="Login"/>
-		<input type="reset" value="Reset"/>
-		<br>
-	</form>
+		<div id="contenedor">
+		<h1>Chat</h1>
+			<div id="formulario">
+				<form id="form1" action="loginUser" method="post" onsubmit="return validate()" name="login">
+					<p>Nickname</p>
+					<input type="text" name="nickname" required/>
+					<br>
+					<p>Encryption Key</p>
+					<input type="number" name="key" required/>
+					<br>
+					<br>
+					<input type="submit" value="Login"/>
+					<input type="reset" value="Reset"/>
+					<br>
+				</form>
+			</div>
+		</div>
 	</body>
 </html>

@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>Chat Room</title>
+		<meta charset="ISO-8859-1">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="author" content="Borja Gete">
+        <meta name="author" content="Plamen Peytov">
+        <meta name="description" content="Práctica 3 ChatWeb">
 		<script> 
 		setInterval(refreshIframe, 5000); //establece el tiempo a 5 seg.
 		function refreshIframe() {  //recarga el iframe de la pÃ¡gina
@@ -17,7 +23,7 @@
 			}
 			if (encrypt){
 				//Encriptamos
-				value=cesar(value,key,false);
+				value=cesar(value,key,true);
 				//value=value2
 			}
 			document.forms["sMsg"]["isEncrypted"].value=encrypt;
@@ -44,12 +50,39 @@
 		    return r  
 		} 
 		</script>
-		<meta charset="ISO-8859-1">
-		<title>Chat Room</title>
+		<style>
+			body{
+			    background-color: hsla(120, 100%, 25%, 0.3);;
+			    font-family: Calibri,Verdana,Serif,Arial;
+			}
+			textarea{
+				background-color: hsla(25%, 100%, 75%, 0.3);;
+			    font-family: Calibri,Verdana,Serif,Arial;
+			}
+			div{
+				background-color: linen;
+				align: center;
+				border-radius: 10px;
+			}
+			p{align:center;}
+			div#contenedor{
+				padding: 1em 3em;
+ 				margin: 3em 12% auto;
+			}
+			b{
+				text-decoration: underline;
+				text-color:blue
+			}
+			i{
+				text-align: right;
+			}
+		</style>
 	</head>
 	<body>
+	<div id="contenedor">
 		<h1>Chat Room</h1>
-		<h3>You are logged as <%= session.getAttribute("nickname") %></h3>
+		<h3>You are logged as <b><%= session.getAttribute("nickname") %></b></h3>
+		<div id="formulario">
 		<br/>
 		<iframe src="conversation" width=360 height=150>Error loading chat messages</iframe>
 		<form id="form2" action="sendMsg" method="post" onsubmit="return sendMessages()" name="sMsg">
@@ -57,7 +90,7 @@
 			<input id="buttonRefresh" type="button" name="refresh" value="Refresh" onclick="return refreshIframe()" />
 			<br/>
 			<textarea id="fieldMsg" name="msg" rows="4" cols="40" defaultValue="Write your message here"></textarea>
-			<input id="boxCypher" type="checkbox" name="cypher" > Encrypted
+			<input id="boxCypher" type="checkbox" name="cypher" ><i>Encrypted</i> 
 			<br/>	
 			<input id="buttonSend" type="submit" name="send" value="Send" />
 			<input id="buttonClear" type="reset" name="clear" value="Clear" />
@@ -67,6 +100,8 @@
 		</form>   
 		<br/>
 		<a href="logoutUser?nick=${users} ">Logout</a>
-		<br/>	 
+		<br/>
+		</div>
+		</div>
 	</body>
 </html>
