@@ -1,10 +1,8 @@
 package es.ubu.lsi.Practica3ChatWeb;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -29,10 +27,21 @@ import javax.servlet.http.HttpSession;
 public class ServletMessages extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	/**
+	 * Método doGet
+	 * 
+	 * @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida
+	 */			 
+	protected void doGet(HttpServletRequest request, 
+			HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
 		if (session.getAttribute("nickname")!=null){
 			String nick = (String) session.getAttribute("nickname");
@@ -63,6 +72,17 @@ public class ServletMessages extends HttpServlet{
 			response.sendRedirect("index.html");
 		}
 	}
+	/**
+	 * Método doPost
+	 @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida
+	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		doGet(request,response);

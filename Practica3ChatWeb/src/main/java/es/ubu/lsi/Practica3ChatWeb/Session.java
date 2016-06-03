@@ -21,18 +21,29 @@ public class Session implements ServletContextListener{
 	/**Lista de mensajes enviados al chat*/
 	private List<String> messages;
 	@Override
+	/**
+	 * Método contextInitialized
+	 * 		Inizializamos el contexto
+	 * @param
+	 * 		sce Evento del servlet
+	 */
 	public void contextInitialized(ServletContextEvent sce) {
-		users =  new ArrayList<String>();
 		messages = new ArrayList<String>();
-		
+		users = new ArrayList<String>();
 		ServletContext context = sce.getServletContext();
-		context.setAttribute("users", users);
 		context.setAttribute("messages", messages);
+		context.setAttribute("users", users);
 	}
 	@Override
+	/**
+	 * Método contextDestroyed
+	 * 		Destruimos el contexto
+	 * @param arg0
+	 * 		Evento del servlet
+	 */
 	public void contextDestroyed(ServletContextEvent arg0) {
-		users.removeAll(users);
 		messages.removeAll(messages);
+		users.removeAll(users);
 	}
 
 	
