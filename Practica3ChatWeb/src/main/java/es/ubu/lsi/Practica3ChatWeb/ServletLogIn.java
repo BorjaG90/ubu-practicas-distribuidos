@@ -1,7 +1,6 @@
 package es.ubu.lsi.Practica3ChatWeb;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
@@ -23,10 +22,21 @@ import javax.servlet.http.HttpSession;
 public class ServletLogIn extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	/**
+	 * Método doGet
+	 * 
+	 * @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida 
+	 */
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
 		if (request.getParameter("nickname")!=null){
 			String nick = new String(request.getParameter("nickname").getBytes("ISO-8859-1"), "UTF-8");
@@ -41,8 +51,6 @@ public class ServletLogIn extends HttpServlet{
 				List<String> messages = (List<String>) context.getAttribute("messages");
 				String first = nick + " is connected";
 				messages.add(first);
-				List<String> users = (List<String>) context.getAttribute("users");
-				users.add(nick);
 			}
 			
 			RequestDispatcher dispatcher = this.getServletContext().getRequestDispatcher("/chatroom.jsp");
@@ -55,6 +63,18 @@ public class ServletLogIn extends HttpServlet{
 			response.sendRedirect("index.html");
 		}
 	}
+	/**
+	 * Método doPost
+	 * 
+	 * @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida
+	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		doGet(request,response);

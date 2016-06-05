@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,8 +23,20 @@ import javax.servlet.http.HttpSession;
 public class Conversation extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	/**
+	 * Método doGet
+	 * 
+	 * @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida
+	 */
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
@@ -35,7 +46,10 @@ public class Conversation extends HttpServlet{
 		String msg ="";
 		
 		out.println("<html>");
-		out.println("<head></head>");
+		out.println("<head><style>");
+		out.println("body {background-color: lightblue; font-size: x-small; ");
+		out.println("font-family: Verdana,Serif,Arial,Calibri;}");
+		out.println("</style></head>");
 		out.println("<body>");
 		while(msgIt.hasNext()){
 			msg = msgIt.next();
@@ -46,6 +60,18 @@ public class Conversation extends HttpServlet{
 		out.println("</html>");
 		out.close();
 	}
+	/**
+	 * Método doPost
+	 * 
+	 * @param request
+	 * 			Petición al servlet
+	 * @param response
+	 * 			Respuesta del servlet
+	 * @throws ServletException 
+	 * 			Excepcion de funcionamiento del servlet
+	 * @throws IOException
+	 * 			Excepcion de entrada/salida
+	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		doGet(request,response);
