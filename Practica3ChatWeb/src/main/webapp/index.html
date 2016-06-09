@@ -7,24 +7,24 @@
         <meta name="author" content="Plamen Peytov">
         <meta name="description" content="Práctica 3 ChatWeb">
         <script>
-    	function validate()
-    	{
-    		alert("Entra aqui");
-    		alert(document.forms["login"]["nickname"].value)
-    		alert(document.forms["login"]["key"].value)
-    		//if (value==null || value==""){
-    		if (document.forms["login"]["nickname"].value == null || document.forms["login"]["nickname"].value =""){
-    			alert("Nickname field can't be empty");
+    	function validate() {
+    		
+    		var nickname = document.forms["loginForm"]["nickname"].value;    		
+    		var key = document.forms["loginForm"]["key"].value;
+    		
+    		if(nickname == null || nickname == "") {
+    			alert("Nickname can't be empty!");
     			return false;
     		}
-    		var value=document.forms["login"]["nickname"].value;
-    		//if (key==null || key==""){
-    		if (document.forms["login"]["key"].value == null || document.forms["login"]["key"].value =""){
-    			alert("Key field can't be empty");
+    		
+    		if(key == null || key == "") {
+    			alert("Key can't be empty!");
     			return false;
     		}
-    		var key=document.forms["login"]["key"].value;
+    		
+    		document.forms["loginForm"].submit();
     	}
+    		
     	</script>
     	<style>
 			body {
@@ -47,12 +47,12 @@
 		<div id="contenedor">
 		<h1>Chat</h1>
 			<div id="formulario">
-				<form id="form1" action="loginUser" method="post" onsubmit="return validate()" name="login">
+				<form id="loginForm" action="loginUser" method="post" onsubmit="return validate()">
 					<p>Nickname</p>
-					<input type="text" name="nickname" required/>
+					<input type="text" name="nickname"/>
 					<br>
 					<p>Encryption Key</p>
-					<input type="number" name="key" required/>
+					<input type="number" name="key"/>
 					<br>
 					<br>
 					<input type="submit" value="Login"/>
